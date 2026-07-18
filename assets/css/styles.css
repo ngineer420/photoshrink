@@ -106,7 +106,7 @@ a:hover { text-decoration: underline; }
 button, select, input, textarea { font-family: inherit; font-size: inherit; color: inherit; }
 
 button {
-  cursor: pointer;
+  cursor: default;
   background: var(--paper-raised);
   border: 1px solid var(--border);
   color: var(--ink);
@@ -238,7 +238,7 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
 .tab-btn {
   background: transparent; border: none; border-radius: 999px;
   padding: 10px 16px; color: var(--ink-dim); font-size: 14px; font-weight: 700;
-  text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; cursor: default; display: inline-flex; align-items: center; gap: 6px;
 }
 .tab-btn:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); text-decoration: none; }
 .tab-btn[aria-selected="true"], .tab-btn[aria-current="page"], .tab-btn.active {
@@ -254,7 +254,7 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
   border-radius: var(--radius-lg);
   background: var(--paper-raised);
   padding: clamp(28px, 6vw, 52px) 20px;
-  text-align: center; cursor: pointer;
+  text-align: center; cursor: default;
   transition: border-color .15s ease, background .15s ease, transform .1s ease;
 }
 .dropzone:hover { border-color: var(--coral); }
@@ -264,7 +264,7 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
 .dropzone .dz-title { font-size: 18px; font-weight: 800; margin: 0 0 6px; }
 .dropzone .dz-sub { color: var(--ink-faint); font-size: 13.5px; margin: 0; }
 .dropzone .dz-sub kbd { font-family: var(--mono); background: var(--paper-inset); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 11.5px; }
-.dropzone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.dropzone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: default; width: 100%; height: 100%; }
 
 /* ---------- tool workspace ---------- */
 .tool-panel { padding-top: 4px; }
@@ -397,7 +397,7 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
 .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
 .footer-links a { color: var(--ink-dim); }
 
-.erabbit-mark { display: block; width: 10px; margin: 0 0 0 auto; line-height: 0; cursor: pointer; }
+.erabbit-mark { display: block; width: 10px; margin: 0 0 0 auto; line-height: 0; cursor: default; }
 .erabbit-mark img { display: block; width: 10px; height: 10px; margin-left: auto; }
 
 /* ---------- misc ---------- */
