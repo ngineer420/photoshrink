@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>JPEG vs. PNG vs. WebP: Which Format Should You Use? — photoshrink.net</title>
+<meta name="description" content="A plain-language comparison of JPEG, PNG, and WebP: how lossy vs. lossless compression works, when you need transparency, and which format to pick for photos, graphics, and the web.">
+<link rel="canonical" href="https://photoshrink.net/articles/jpeg-vs-png-vs-webp.html">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+    </a>
+  </div>
+</header>
+<main class="container-narrow">
+  <h1>JPEG vs. PNG vs. WebP: Which Format Should You Use?</h1>
+
+  <p>Every image on the web is a tradeoff between file size, quality, and features like transparency or animation. JPEG, PNG, and WebP make that tradeoff differently, and picking the wrong one is one of the easiest ways to make a page slower or a logo look wrong. Here's what actually separates them.</p>
+
+  <h2>Lossy vs. lossless: the core difference</h2>
+  <p>JPEG is <strong>lossy</strong>: it throws away image detail that the human eye is least likely to notice — subtle color gradients, high-frequency texture — in exchange for a much smaller file. Push the quality setting low enough and you'll see it: blocky squares around hard edges, smudged detail in busy areas. PNG is <strong>lossless</strong>: every pixel comes back out exactly as it went in, no matter how many times you re-save it. That precision costs file size, especially on photographic content.</p>
+  <p>WebP can do <em>either</em> — it supports both a lossy mode (like JPEG, but generally more efficient at the same visual quality) and a lossless mode (like PNG, but usually smaller). That flexibility is why WebP has become the default recommendation for web images when compatibility isn't a concern.</p>
+
+  <h2>Transparency</h2>
+  <p>JPEG has no alpha channel — it cannot represent transparency at all. If you convert a transparent PNG to JPEG (our <a href="/convert-image">converter</a> does this automatically), the see-through areas get filled with a solid color, usually white. PNG and WebP both fully support transparency, including partial/soft transparency for things like drop shadows or feathered edges.</p>
+
+  <h2>What each format is actually good at</h2>
+  <ul>
+    <li><strong>JPEG</strong> — photographs and anything with smooth gradients and natural color variation. Universally supported, including by very old software.</li>
+    <li><strong>PNG</strong> — screenshots, logos, icons, diagrams, and anything with flat colors, sharp edges, or text. Also the right choice whenever you need transparency and can't use WebP.</li>
+    <li><strong>WebP</strong> — the general-purpose modern choice. Smaller than JPEG for photos at equivalent quality, smaller than PNG for graphics in lossless mode, and supports transparency. The only reason to avoid it is a specific compatibility requirement (some older tools and email clients still don't handle it well).</li>
+  </ul>
+
+  <h2>Making the call</h2>
+  <p>If you're not sure, WebP is the safest general answer for anything destined for a modern browser. Reach for PNG specifically when you need guaranteed transparency support everywhere, or when the image is graphics/text rather than a photo. Reach for JPEG mainly for maximum compatibility with older or more conservative software, or when a tool simply doesn't accept WebP uploads yet.</p>
+  <p>Whichever you land on, pair the format choice with the right <a href="/compress-image">compression quality</a> — see our <a href="/articles/how-image-compression-works.html">guide to how image compression actually works</a> for how to pick a setting instead of guessing.</p>
+
+  <h2>Keep reading</h2>
+  <ul>
+    <li><a href="/articles/how-image-compression-works.html">How image compression actually works</a></li>
+    <li><a href="/articles/why-client-side-image-tools-are-more-private.html">Why client-side image tools are more private</a></li>
+    <li><a href="/convert-image">Try the image converter</a></li>
+  </ul>
+</main>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

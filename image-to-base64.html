@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Image to Base64 Converter — Get a Data URI, Free — photoshrink.net</title>
+<meta name="description" content="Convert an image to a Base64 data URI, with ready-to-paste HTML and CSS snippets. Free, and 100% in your browser — nothing is uploaded.">
+<link rel="canonical" href="https://photoshrink.net/image-to-base64">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Image to Base64 Converter — Get a Data URI, Free">
+<meta property="og:description" content="Convert an image to a Base64 data URI, with ready-to-paste HTML and CSS snippets. Runs entirely client-side.">
+<meta property="og:url" content="https://photoshrink.net/image-to-base64">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Image to Base64 Converter — Get a Data URI, Free">
+<meta name="twitter:description" content="Convert an image to a Base64 data URI. Runs entirely client-side — nothing is uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Image to Base64 — PhotoShrink",
+  "url": "https://photoshrink.net/image-to-base64",
+  "applicationCategory": "PhotoApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Free browser-based image-to-Base64 converter with ready-to-paste HTML and CSS snippets."
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side · nothing uploaded</span>
+    <h1>Image to <span class="hl">Base64</span></h1>
+    <p class="sub">Get a data URI plus ready-to-paste HTML and CSS snippets.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <div role="tablist" class="tabbar" aria-label="Image tool">
+    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="false" class="tab-btn">Resize</a>
+    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="false" class="tab-btn">Compress</a>
+    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="false" class="tab-btn">Crop</a>
+    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="false" class="tab-btn">Convert</a>
+    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn">Rotate &amp; Flip</a>
+    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="true" aria-current="page" class="tab-btn active">To Base64</a>
+    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn">Favicon</a>
+  </div>
+
+  <section id="panel-base64" class="tool-panel tab-panel active" data-prefix="base64">
+    <div class="dropzone" id="base64-drop">
+      <input type="file" id="base64-file" accept="image/*" aria-label="Choose an image to convert to Base64">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to Base64-encode</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="base64-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="base64-fname"></span><button class="ghost change-file-btn" type="button" id="base64-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><img id="base64-preview" alt="Uploaded image preview"></div>
+        <div class="meta-row" id="base64-meta"></div>
+        <div class="field" style="margin-top:14px;">
+          <label for="base64-datauri">Data URI</label>
+          <textarea class="code-area" id="base64-datauri" rows="4" readonly spellcheck="false"></textarea>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="icon-btn" id="base64-copy-datauri" style="position:relative;">Copy data URI<span class="copy-flash" id="base64-copy-datauri-flash">Copied!</span></button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Ready-to-paste snippets</h2>
+        <div class="field">
+          <label for="base64-alt">Alt text (for HTML snippet)</label>
+          <input type="text" id="base64-alt" placeholder="Describe the image" value="Image">
+        </div>
+        <div class="field">
+          <label for="base64-selector">CSS selector (for CSS snippet)</label>
+          <input type="text" id="base64-selector" placeholder=".element" value=".icon">
+        </div>
+        <div class="snippet-block">
+          <div class="snippet-label"><span>HTML</span><button type="button" class="icon-btn" id="base64-copy-html" style="position:relative;">Copy<span class="copy-flash" id="base64-copy-html-flash">Copied!</span></button></div>
+          <textarea class="code-area" id="base64-html-snippet" rows="3" readonly spellcheck="false"></textarea>
+        </div>
+        <div class="snippet-block">
+          <div class="snippet-label"><span>CSS</span><button type="button" class="icon-btn" id="base64-copy-css" style="position:relative;">Copy<span class="copy-flash" id="base64-copy-css-flash">Copied!</span></button></div>
+          <textarea class="code-area" id="base64-css-snippet" rows="3" readonly spellcheck="false"></textarea>
+        </div>
+        <div class="error-banner" id="base64-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">About image-to-Base64 conversion</h2>
+    <p>A Base64 data URI packs an entire image's bytes into a plain text string that can be embedded directly inside HTML or CSS — no separate file, no extra HTTP request. That's handy for tiny icons, inline email images, or self-contained single-file demos. The tradeoff: Base64 text runs about 33% larger than the original binary file, so it's not a substitute for a real image tag on anything but small assets.</p>
+    <h2>How to convert an image to Base64</h2>
+    <ol>
+      <li>Drop, browse to, or paste an image into the box above.</li>
+      <li>Copy the raw data URI, or fill in alt text / a CSS selector and copy the ready-made snippet.</li>
+      <li>Paste it straight into your HTML or CSS.</li>
+    </ol>
+    <h2>FAQ</h2>
+    <div class="faq-item">
+      <h3>Why is the Base64 text bigger than my original file?</h3>
+      <p>Base64 encodes binary data using only 64 printable characters, which costs roughly 4 characters for every 3 original bytes — about a 33% size increase. It trades file size for the convenience of embedding.</p>
+    </div>
+    <div class="faq-item">
+      <h3>When should I use a data URI instead of a normal image file?</h3>
+      <p>Best for small, reused assets like icons or logos where saving an HTTP request matters more than the size overhead. For photos or anything large, a normal linked image (optionally run through the <a href="/compress-image">compressor</a> first) is almost always better.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Does the data URI include the image type?</h3>
+      <p>Yes — it starts with <code>data:image/png;base64,</code> (or jpeg/webp/etc.) so browsers know how to decode it automatically.</p>
+    </div>
+    <h2>More image tools</h2>
+    <ul>
+      <li><a href="/compress-image">Image Compressor</a></li>
+      <li><a href="/convert-image">Image Converter</a></li>
+      <li><a href="/favicon-generator">Favicon Generator</a></li>
+      <li><a href="/">All tools on one page (home)</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

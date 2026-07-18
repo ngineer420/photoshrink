@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Image Compressor — Shrink Photo File Size, Free — photoshrink.net</title>
+<meta name="description" content="Compress JPEG and WebP images with a live quality slider and instant before/after file sizes. Free, and 100% in your browser — nothing is uploaded.">
+<link rel="canonical" href="https://photoshrink.net/compress-image">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Image Compressor — Shrink Photo File Size, Free">
+<meta property="og:description" content="Compress JPEG and WebP images with a live quality slider and instant before/after file sizes. Runs entirely client-side.">
+<meta property="og:url" content="https://photoshrink.net/compress-image">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Image Compressor — Shrink Photo File Size, Free">
+<meta name="twitter:description" content="Compress JPEG and WebP images with a live quality slider. Runs entirely client-side — nothing is uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Image Compressor — PhotoShrink",
+  "url": "https://photoshrink.net/compress-image",
+  "applicationCategory": "PhotoApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Free browser-based image compressor: quality slider for JPEG/WebP with live before/after file sizes."
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side · nothing uploaded</span>
+    <h1>Image <span class="hl">Compressor</span></h1>
+    <p class="sub">Drag the quality slider and watch the file size shrink in real time.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <div role="tablist" class="tabbar" aria-label="Image tool">
+    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="false" class="tab-btn">Resize</a>
+    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="true" aria-current="page" class="tab-btn active">Compress</a>
+    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="false" class="tab-btn">Crop</a>
+    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="false" class="tab-btn">Convert</a>
+    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn">Rotate &amp; Flip</a>
+    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn">To Base64</a>
+    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn">Favicon</a>
+  </div>
+
+  <section id="panel-compress" class="tool-panel tab-panel active" data-prefix="compress">
+    <div class="dropzone" id="compress-drop">
+      <input type="file" id="compress-file" accept="image/*" aria-label="Choose an image to compress">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to compress</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="compress-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="compress-fname"></span><button class="ghost change-file-btn" type="button" id="compress-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><canvas id="compress-canvas"></canvas></div>
+        <div class="meta-row" id="compress-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Compression settings</h2>
+        <div class="field">
+          <label for="compress-format">Output format</label>
+          <select id="compress-format">
+            <option value="jpeg">JPEG (lossy)</option>
+            <option value="webp">WebP (lossy)</option>
+            <option value="png">PNG (lossless)</option>
+          </select>
+        </div>
+        <div class="field" id="compress-quality-field">
+          <div class="range-label"><span>Quality</span><span id="compress-quality-value">80%</span></div>
+          <input type="range" id="compress-quality" min="1" max="100" value="80">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="compress-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download compressed image
+          </button>
+        </div>
+        <div class="error-banner" id="compress-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">About this image compressor</h2>
+    <p>The quality slider controls how aggressively JPEG or WebP throws away detail you're unlikely to notice — lower values produce smaller files at the cost of some visible softening or blocky artifacts, especially around sharp edges. Watch the <strong>Before</strong> and <strong>After</strong> byte sizes update live as you drag, find the point where the size drop is worth it, and download.</p>
+    <h2>How to compress an image</h2>
+    <ol>
+      <li>Drop, browse to, or paste a photo into the box above.</li>
+      <li>Pick JPEG or WebP (WebP is usually smaller at the same visual quality).</li>
+      <li>Drag the quality slider and watch the before/after sizes update.</li>
+      <li>Download once you're happy with the size-vs-quality tradeoff.</li>
+    </ol>
+    <h2>FAQ</h2>
+    <div class="faq-item">
+      <h3>Why doesn't the PNG option shrink the file much?</h3>
+      <p>PNG is lossless — it never throws away detail, so there's no quality slider to exploit. Its size depends entirely on the image content (photos compress worse than flat-color graphics). For photos, switch to JPEG or WebP.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What quality setting should I use?</h3>
+      <p>80–90% is a safe range for photos — most people can't spot the difference from the original, but the file is meaningfully smaller. Below 60% you start trading size for visible artifacts. See our <a href="/articles/how-image-compression-works.html">compression guide</a> for the details.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Does compressing also resize the image?</h3>
+      <p>No — dimensions stay the same, only file size changes. Combine it with the <a href="/resize-image">resizer</a> first if you also want smaller pixel dimensions.</p>
+    </div>
+    <h2>More image tools</h2>
+    <ul>
+      <li><a href="/resize-image">Image Resizer</a></li>
+      <li><a href="/convert-image">Image Converter</a></li>
+      <li><a href="/crop-image">Image Cropper</a></li>
+      <li><a href="/">All tools on one page (home)</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

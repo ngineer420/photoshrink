@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>PhotoShrink — Free Image Resizer, Compressor &amp; Converter (100% Browser-Based)</title>
+<meta name="description" content="Resize, compress, crop, convert, rotate, and generate favicons from photos — free, and 100% client-side. Your images never leave your browser: nothing is ever uploaded.">
+<link rel="canonical" href="https://photoshrink.net/">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="PhotoShrink — Free Image Resizer, Compressor &amp; Converter">
+<meta property="og:description" content="Seven free image tools that run entirely in your browser: resize, compress, crop, convert, rotate/flip, image-to-Base64, and favicon generation. Nothing is ever uploaded.">
+<meta property="og:url" content="https://photoshrink.net/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PhotoShrink — Free Image Resizer, Compressor &amp; Converter">
+<meta name="twitter:description" content="Seven free image tools that run entirely in your browser. Nothing is ever uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "PhotoShrink",
+  "url": "https://photoshrink.net/",
+  "applicationCategory": "PhotoApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Free browser-based image toolkit: resize, compress, crop, convert, rotate/flip, image-to-Base64, and favicon generation. All processing happens on-device using the Canvas API — nothing is ever uploaded."
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side · nothing uploaded</span>
+    <h1>Shrink, crop &amp; convert photos<br><span class="hl">without the upload</span></h1>
+    <p class="sub">Resize, compress, crop, convert, rotate, Base64-encode, and generate favicons from your photos — seven free tools that run entirely on your device.</p>
+
+    <div class="squeeze-demo">
+      <div class="squeeze-card before">
+        <div class="sq-size">4.2 MB</div>
+        <div class="squeeze-frame">
+          <svg viewBox="0 0 132 96" preserveAspectRatio="none" aria-hidden="true">
+            <defs><linearGradient id="sq-before" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ff5a36"/></linearGradient></defs>
+            <rect width="132" height="96" fill="url(#sq-before)"/>
+            <circle cx="27" cy="23" r="10" fill="#fff7f0" opacity=".92"/>
+            <path d="M0 96 L40 50 L64 74 L92 42 L132 96 Z" fill="#241a12" opacity=".38"/>
+          </svg>
+        </div>
+      </div>
+      <div class="squeeze-arrow" aria-hidden="true">
+        <svg viewBox="0 0 34 20"><path d="M0 10h26M18 3l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="pct">−88%</span>
+      </div>
+      <div class="squeeze-card after">
+        <div class="sq-size">512 KB</div>
+        <div class="squeeze-frame">
+          <svg viewBox="0 0 132 96" preserveAspectRatio="none" aria-hidden="true">
+            <defs><linearGradient id="sq-after" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ff5a36"/></linearGradient></defs>
+            <rect width="132" height="96" fill="url(#sq-after)"/>
+            <circle cx="27" cy="23" r="10" fill="#fff7f0" opacity=".92"/>
+            <path d="M0 96 L40 50 L64 74 L92 42 L132 96 Z" fill="#241a12" opacity=".38"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <div role="tablist" class="tabbar" aria-label="Image tool">
+    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="true" aria-current="page" class="tab-btn active">Resize</a>
+    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="false" class="tab-btn" tabindex="-1">Compress</a>
+    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="false" class="tab-btn" tabindex="-1">Crop</a>
+    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="false" class="tab-btn" tabindex="-1">Convert</a>
+    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn" tabindex="-1">Rotate &amp; Flip</a>
+    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn" tabindex="-1">To Base64</a>
+    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn" tabindex="-1">Favicon</a>
+  </div>
+
+  <!-- ===================== RESIZE ===================== -->
+  <section role="tabpanel" id="panel-resize" aria-labelledby="tab-resize" class="tool-panel tab-panel active" data-prefix="resize">
+    <div class="dropzone" id="resize-drop">
+      <input type="file" id="resize-file" accept="image/*" aria-label="Choose an image to resize">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to resize</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="resize-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="resize-fname"></span><button class="ghost change-file-btn" type="button" id="resize-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><canvas id="resize-canvas"></canvas></div>
+        <div class="meta-row" id="resize-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Resize settings</h2>
+        <div class="field">
+          <label>Unit</label>
+          <div class="segmented" id="resize-unit-group">
+            <button type="button" id="resize-unit-px" aria-pressed="true">Pixels</button>
+            <button type="button" id="resize-unit-percent" aria-pressed="false">Percent</button>
+          </div>
+        </div>
+        <div class="field field-row" id="resize-dimension-field">
+          <div>
+            <label for="resize-width">Width (px)</label>
+            <input type="number" id="resize-width" min="1" max="20000">
+          </div>
+          <div>
+            <label for="resize-height">Height (px)</label>
+            <input type="number" id="resize-height" min="1" max="20000">
+          </div>
+        </div>
+        <div class="field" id="resize-percent-field" hidden>
+          <label for="resize-percent">Scale (%)</label>
+          <input type="number" id="resize-percent" min="1" max="500" value="100">
+        </div>
+        <div class="field">
+          <div class="checkbox-row">
+            <label><input type="checkbox" id="resize-lock" checked> Lock aspect ratio</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="resize-format">Output format</label>
+          <select id="resize-format">
+            <option value="keep">Keep original</option>
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+        <div class="field" id="resize-quality-field" hidden>
+          <div class="range-label"><span>Quality</span><span id="resize-quality-value">85%</span></div>
+          <input type="range" id="resize-quality" min="1" max="100" value="85">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="resize-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download resized image
+          </button>
+        </div>
+        <div class="error-banner" id="resize-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== COMPRESS ===================== -->
+  <section role="tabpanel" id="panel-compress" aria-labelledby="tab-compress" class="tool-panel tab-panel" data-prefix="compress" hidden>
+    <div class="dropzone" id="compress-drop">
+      <input type="file" id="compress-file" accept="image/*" aria-label="Choose an image to compress">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to compress</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="compress-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="compress-fname"></span><button class="ghost change-file-btn" type="button" id="compress-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><canvas id="compress-canvas"></canvas></div>
+        <div class="meta-row" id="compress-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Compression settings</h2>
+        <div class="field">
+          <label for="compress-format">Output format</label>
+          <select id="compress-format">
+            <option value="jpeg">JPEG (lossy)</option>
+            <option value="webp">WebP (lossy)</option>
+            <option value="png">PNG (lossless)</option>
+          </select>
+        </div>
+        <div class="field" id="compress-quality-field">
+          <div class="range-label"><span>Quality</span><span id="compress-quality-value">80%</span></div>
+          <input type="range" id="compress-quality" min="1" max="100" value="80">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="compress-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download compressed image
+          </button>
+        </div>
+        <div class="error-banner" id="compress-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CROP ===================== -->
+  <section role="tabpanel" id="panel-crop" aria-labelledby="tab-crop" class="tool-panel tab-panel" data-prefix="crop" hidden>
+    <div class="dropzone" id="crop-drop">
+      <input type="file" id="crop-file" accept="image/*" aria-label="Choose an image to crop">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to crop</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="crop-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="crop-fname"></span><button class="ghost change-file-btn" type="button" id="crop-change">Change image</button></div>
+        <h2>Drag to move · drag a corner to resize</h2>
+        <div class="preview-stage">
+          <div class="crop-stage-wrap" id="crop-stage-wrap">
+            <canvas id="crop-canvas"></canvas>
+            <div class="crop-box" id="crop-box">
+              <div class="crop-handle nw" data-corner="nw"></div>
+              <div class="crop-handle ne" data-corner="ne"></div>
+              <div class="crop-handle sw" data-corner="sw"></div>
+              <div class="crop-handle se" data-corner="se"></div>
+            </div>
+          </div>
+        </div>
+        <div class="meta-row" id="crop-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Crop settings</h2>
+        <div class="field">
+          <label>Aspect ratio</label>
+          <div class="segmented" id="crop-aspect-group">
+            <button type="button" data-ratio="0" aria-pressed="true">Free</button>
+            <button type="button" data-ratio="1">1:1</button>
+            <button type="button" data-ratio="1.3333">4:3</button>
+            <button type="button" data-ratio="1.7778">16:9</button>
+            <button type="button" data-ratio="1.5">3:2</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="crop-format">Output format</label>
+          <select id="crop-format">
+            <option value="keep">Keep original</option>
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="crop-download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download cropped image
+          </button>
+        </div>
+        <div class="error-banner" id="crop-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CONVERT ===================== -->
+  <section role="tabpanel" id="panel-convert" aria-labelledby="tab-convert" class="tool-panel tab-panel" data-prefix="convert" hidden>
+    <div class="dropzone" id="convert-drop">
+      <input type="file" id="convert-file" accept="image/*" aria-label="Choose an image to convert">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to convert</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="convert-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="convert-fname"></span><button class="ghost change-file-btn" type="button" id="convert-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><canvas id="convert-canvas"></canvas></div>
+        <div class="meta-row" id="convert-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Convert settings</h2>
+        <div class="field">
+          <label for="convert-format">Convert to</label>
+          <select id="convert-format">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+        <p class="dz-sub" id="convert-bg-note" hidden style="text-align:left;margin:-6px 0 14px;">JPEG doesn't support transparency — see-through areas will be filled white.</p>
+        <div class="field" id="convert-quality-field" hidden>
+          <div class="range-label"><span>Quality</span><span id="convert-quality-value">85%</span></div>
+          <input type="range" id="convert-quality" min="1" max="100" value="85">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="convert-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download converted image
+          </button>
+        </div>
+        <div class="error-banner" id="convert-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ROTATE & FLIP ===================== -->
+  <section role="tabpanel" id="panel-rotate" aria-labelledby="tab-rotate" class="tool-panel tab-panel" data-prefix="rotate" hidden>
+    <div class="dropzone" id="rotate-drop">
+      <input type="file" id="rotate-file" accept="image/*" aria-label="Choose an image to rotate">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to rotate or flip</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="rotate-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="rotate-fname"></span><button class="ghost change-file-btn" type="button" id="rotate-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><canvas id="rotate-canvas"></canvas></div>
+        <div class="meta-row" id="rotate-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Rotate &amp; flip</h2>
+        <div class="btn-row">
+          <button type="button" id="rotate-left">↺ Rotate left 90°</button>
+          <button type="button" id="rotate-right">↻ Rotate right 90°</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" id="flip-h">⇋ Flip horizontal</button>
+          <button type="button" id="flip-v">⇵ Flip vertical</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="ghost" id="rotate-reset">Reset</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="rotate-download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download image
+          </button>
+        </div>
+        <div class="error-banner" id="rotate-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== IMAGE TO BASE64 ===================== -->
+  <section role="tabpanel" id="panel-base64" aria-labelledby="tab-base64" class="tool-panel tab-panel" data-prefix="base64" hidden>
+    <div class="dropzone" id="base64-drop">
+      <input type="file" id="base64-file" accept="image/*" aria-label="Choose an image to convert to Base64">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to Base64-encode</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="base64-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="base64-fname"></span><button class="ghost change-file-btn" type="button" id="base64-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><img id="base64-preview" alt="Uploaded image preview"></div>
+        <div class="meta-row" id="base64-meta"></div>
+        <div class="field" style="margin-top:14px;">
+          <label for="base64-datauri">Data URI</label>
+          <textarea class="code-area" id="base64-datauri" rows="4" readonly spellcheck="false"></textarea>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="icon-btn" id="base64-copy-datauri" style="position:relative;">Copy data URI<span class="copy-flash" id="base64-copy-datauri-flash">Copied!</span></button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Ready-to-paste snippets</h2>
+        <div class="field">
+          <label for="base64-alt">Alt text (for HTML snippet)</label>
+          <input type="text" id="base64-alt" placeholder="Describe the image" value="Image">
+        </div>
+        <div class="field">
+          <label for="base64-selector">CSS selector (for CSS snippet)</label>
+          <input type="text" id="base64-selector" placeholder=".element" value=".icon">
+        </div>
+        <div class="snippet-block">
+          <div class="snippet-label"><span>HTML</span><button type="button" class="icon-btn" id="base64-copy-html" style="position:relative;">Copy<span class="copy-flash" id="base64-copy-html-flash">Copied!</span></button></div>
+          <textarea class="code-area" id="base64-html-snippet" rows="3" readonly spellcheck="false"></textarea>
+        </div>
+        <div class="snippet-block">
+          <div class="snippet-label"><span>CSS</span><button type="button" class="icon-btn" id="base64-copy-css" style="position:relative;">Copy<span class="copy-flash" id="base64-copy-css-flash">Copied!</span></button></div>
+          <textarea class="code-area" id="base64-css-snippet" rows="3" readonly spellcheck="false"></textarea>
+        </div>
+        <div class="error-banner" id="base64-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FAVICON GENERATOR ===================== -->
+  <section role="tabpanel" id="panel-favicon" aria-labelledby="tab-favicon" class="tool-panel tab-panel" data-prefix="favicon" hidden>
+    <div class="dropzone" id="favicon-drop">
+      <input type="file" id="favicon-file" accept="image/*" aria-label="Choose an image to generate favicons from">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop a square-ish logo or image</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — non-square images are center-cropped</p>
+    </div>
+    <div class="workspace" id="favicon-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="favicon-fname"></span><button class="ghost change-file-btn" type="button" id="favicon-change">Change image</button></div>
+        <h2>Generated sizes</h2>
+        <div class="favicon-grid" id="favicon-grid"></div>
+        <div class="error-banner" id="favicon-error" role="alert"></div>
+      </div>
+      <div class="panel">
+        <h2>Add them to your site</h2>
+        <p style="color:var(--ink-dim);font-size:13.5px;margin-top:0;">Download each PNG above into your site's root folder using the filenames shown, then paste this into your <code>&lt;head&gt;</code>:</p>
+        <div class="snippet-block">
+          <div class="snippet-label"><span>HTML</span><button type="button" class="icon-btn" id="favicon-copy-snippet" style="position:relative;">Copy<span class="copy-flash" id="favicon-copy-snippet-flash">Copied!</span></button></div>
+          <textarea class="code-area" id="favicon-snippet" rows="6" readonly spellcheck="false"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">Seven image tools, zero uploads</h2>
+    <p>PhotoShrink runs every tool locally in your browser using the HTML <strong>Canvas API</strong> — the same engine browsers use to draw web pages. When you drop in a photo, it's decoded and processed entirely on your device; the pixels never touch a network request. That means no upload wait, no file-size limit imposed by a server, and no copy of your photos sitting on someone else's disk.</p>
+    <p>Prefer a dedicated page for one tool? Each one also lives on its own: <a href="/resize-image">Resize</a>, <a href="/compress-image">Compress</a>, <a href="/crop-image">Crop</a>, <a href="/convert-image">Convert</a>, <a href="/rotate-image">Rotate &amp; Flip</a>, <a href="/image-to-base64">Image to Base64</a>, and <a href="/favicon-generator">Favicon Generator</a>.</p>
+  </section>
+
+  <section class="container-narrow" style="padding-top:0;" id="articles">
+    <h2 style="margin-top:0;">Learn more about image tools</h2>
+    <div class="faq-item">
+      <h3><a href="/articles/jpeg-vs-png-vs-webp.html">JPEG vs. PNG vs. WebP: which format should you use?</a></h3>
+      <p>How lossy and lossless compression actually work, when transparency forces your hand, and why WebP usually wins on size.</p>
+    </div>
+    <div class="faq-item">
+      <h3><a href="/articles/how-image-compression-works.html">How image compression actually works</a></h3>
+      <p>Quality sliders, chroma subsampling, and why some photos shrink 90% while others barely move.</p>
+    </div>
+    <div class="faq-item">
+      <h3><a href="/articles/resizing-images-without-losing-quality.html">Resizing images without losing quality</a></h3>
+      <p>Upscaling vs. downscaling, aspect ratio math, and picking the right output size for web, print, or social.</p>
+    </div>
+    <div class="faq-item">
+      <h3><a href="/articles/why-client-side-image-tools-are-more-private.html">Why client-side image tools are more private</a></h3>
+      <p>What actually happens (and doesn't) when a tool runs entirely in your browser instead of on a server.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

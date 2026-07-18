@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Why Client-Side Image Tools Are More Private — photoshrink.net</title>
+<meta name="description" content="What actually happens — and doesn't — when an image tool runs entirely in your browser instead of on a server, and how to tell the difference from the outside.">
+<link rel="canonical" href="https://photoshrink.net/articles/why-client-side-image-tools-are-more-private.html">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+    </a>
+  </div>
+</header>
+<main class="container-narrow">
+  <h1>Why Client-Side Image Tools Are More Private</h1>
+
+  <p>Most "online image tool" sites work the way you'd guess: you pick a file, it uploads to a server somewhere, that server processes it, and it sends the result back down. PhotoShrink doesn't do that step at all — every tool here runs using the browser's own <strong>Canvas API</strong>, which means the actual image processing happens on your device, in the tab you already have open.</p>
+
+  <h2>What "client-side" means concretely</h2>
+  <p>When you drop a photo into, say, the <a href="/resize-image">resizer</a>, the browser reads the file directly from your disk into memory, decodes it, and draws it onto an invisible <code>&lt;canvas&gt;</code> element at the new size — all of this is standard JavaScript running locally, the same kind of code that draws animations or games in a browser tab. The resized result is then handed back to you as a downloadable file, generated locally too. At no point does that image data get packaged into a network request and sent anywhere. You can verify this yourself: open your browser's network inspector, use any tool on this site, and watch — no image upload ever appears in the request list.</p>
+
+  <h2>Why this matters</h2>
+  <ul>
+    <li><strong>No copy left behind.</strong> A server-based tool necessarily receives your file, even if it claims to delete it immediately afterward — you're trusting a policy, not a mechanism. A client-side tool structurally can't retain your file, because it never had it.</li>
+    <li><strong>No upload wait, no size limit.</strong> Server-based tools often cap file size or take a while on a slow connection. Local processing is limited only by your device's memory, and starts instantly.</li>
+    <li><strong>Works offline.</strong> Once the page itself has loaded, the tools keep working without a network connection at all, since there's nothing left to fetch.</li>
+  </ul>
+
+  <h2>What client-side processing doesn't change</h2>
+  <p>This site still loads over the network like any other web page, and it can still show ads (PhotoShrink is ad-supported) or use basic aggregate analytics — see the <a href="/privacy.html">privacy policy</a> for specifics. Those are separate from, and unrelated to, the image files you actually process: the ad script and any analytics never see your photos, because the photos never leave the canvas they're drawn on.</p>
+
+  <h2>How to tell if a tool is really client-side</h2>
+  <p>Don't just take a claim at face value — check it. Open your browser's developer tools, go to the Network tab, use the feature, and look for any outgoing request containing image data. On a genuinely client-side tool, you'll see the page's own assets load once, and nothing else happens when you process a file. If you see a POST request firing off every time you click "convert" or "resize," the processing is happening on a server, whatever the marketing copy says.</p>
+
+  <h2>Keep reading</h2>
+  <ul>
+    <li><a href="/articles/how-image-compression-works.html">How image compression actually works</a></li>
+    <li><a href="/articles/jpeg-vs-png-vs-webp.html">JPEG vs. PNG vs. WebP: which format should you use?</a></li>
+    <li><a href="/">Browse all tools</a></li>
+  </ul>
+</main>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

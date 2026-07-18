@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Rotate &amp; Flip Image — Free Online Photo Rotator — photoshrink.net</title>
+<meta name="description" content="Rotate a photo 90° left or right and flip it horizontally or vertically. Free, and 100% in your browser — nothing is uploaded.">
+<link rel="canonical" href="https://photoshrink.net/rotate-image">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Rotate &amp; Flip Image — Free Online Photo Rotator">
+<meta property="og:description" content="Rotate a photo 90° left or right and flip it horizontally or vertically. Runs entirely client-side.">
+<meta property="og:url" content="https://photoshrink.net/rotate-image">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Rotate &amp; Flip Image — Free Online Photo Rotator">
+<meta name="twitter:description" content="Rotate and flip a photo. Runs entirely client-side — nothing is uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Rotate & Flip — PhotoShrink",
+  "url": "https://photoshrink.net/rotate-image",
+  "applicationCategory": "PhotoApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Free browser-based image rotator: rotate 90° left/right and flip horizontally or vertically."
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side · nothing uploaded</span>
+    <h1>Rotate <span class="hl">&amp; Flip</span></h1>
+    <p class="sub">Fix a sideways photo or mirror it — one click at a time.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <div role="tablist" class="tabbar" aria-label="Image tool">
+    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="false" class="tab-btn">Resize</a>
+    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="false" class="tab-btn">Compress</a>
+    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="false" class="tab-btn">Crop</a>
+    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="false" class="tab-btn">Convert</a>
+    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="true" aria-current="page" class="tab-btn active">Rotate &amp; Flip</a>
+    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn">To Base64</a>
+    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn">Favicon</a>
+  </div>
+
+  <section id="panel-rotate" class="tool-panel tab-panel active" data-prefix="rotate">
+    <div class="dropzone" id="rotate-drop">
+      <input type="file" id="rotate-file" accept="image/*" aria-label="Choose an image to rotate">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to rotate or flip</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="rotate-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="rotate-fname"></span><button class="ghost change-file-btn" type="button" id="rotate-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><canvas id="rotate-canvas"></canvas></div>
+        <div class="meta-row" id="rotate-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Rotate &amp; flip</h2>
+        <div class="btn-row">
+          <button type="button" id="rotate-left">↺ Rotate left 90°</button>
+          <button type="button" id="rotate-right">↻ Rotate right 90°</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" id="flip-h">⇋ Flip horizontal</button>
+          <button type="button" id="flip-v">⇵ Flip vertical</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="ghost" id="rotate-reset">Reset</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="rotate-download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download image
+          </button>
+        </div>
+        <div class="error-banner" id="rotate-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">About this rotate &amp; flip tool</h2>
+    <p>Rotate turns the whole image 90° at a time — two clicks gets you 180°, useful for photos that came out of a camera or phone sideways or upside-down. Flip mirrors the image across a horizontal or vertical axis instead of turning it. Every button recomputes from the original file, so you can mix rotations and flips freely and never lose quality to repeated re-encoding — nothing is finalized until you download.</p>
+    <h2>How to rotate or flip an image</h2>
+    <ol>
+      <li>Drop, browse to, or paste a photo into the box above.</li>
+      <li>Click Rotate left/right to turn it 90° at a time.</li>
+      <li>Click Flip horizontal/vertical to mirror it.</li>
+      <li>Click Reset any time to go back to the original orientation, then Download when you're done.</li>
+    </ol>
+    <h2>FAQ</h2>
+    <div class="faq-item">
+      <h3>Why did the image dimensions swap after rotating?</h3>
+      <p>A 90° or 270° rotation swaps width and height — a 1600×900 photo becomes 900×1600. That's expected and correct; 180° keeps the original dimensions.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What's the difference between rotate and flip?</h3>
+      <p>Rotate turns the image around its center, like spinning a photo on a table. Flip mirrors it, like looking at it in a mirror — text would read backwards after a horizontal flip.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Does this lose quality each time I click a button?</h3>
+      <p>No — every click recomputes from the original image at full resolution. Only the final download is encoded once, so experiment freely.</p>
+    </div>
+    <h2>More image tools</h2>
+    <ul>
+      <li><a href="/crop-image">Image Cropper</a></li>
+      <li><a href="/resize-image">Image Resizer</a></li>
+      <li><a href="/convert-image">Image Converter</a></li>
+      <li><a href="/">All tools on one page (home)</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

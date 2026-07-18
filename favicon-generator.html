@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Favicon Generator — Create All Icon Sizes from One Image, Free — photoshrink.net</title>
+<meta name="description" content="Generate every favicon size you need (16, 32, 48, 180, 192, 512px) from one image, plus the HTML link tags to paste into your site. Free, and 100% in your browser.">
+<link rel="canonical" href="https://photoshrink.net/favicon-generator">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Favicon Generator — Create All Icon Sizes from One Image, Free">
+<meta property="og:description" content="Generate every favicon size you need from one image, plus the HTML link tags. Runs entirely client-side.">
+<meta property="og:url" content="https://photoshrink.net/favicon-generator">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Favicon Generator — Create All Icon Sizes from One Image, Free">
+<meta name="twitter:description" content="Generate every favicon size you need from one image. Runs entirely client-side — nothing is uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Favicon Generator — PhotoShrink",
+  "url": "https://photoshrink.net/favicon-generator",
+  "applicationCategory": "PhotoApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Free browser-based favicon generator: produces 16/32/48/180/192/512px PNGs from one image, plus the HTML link tags."
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side · nothing uploaded</span>
+    <h1>Favicon <span class="hl">Generator</span></h1>
+    <p class="sub">One logo in, every icon size out — plus the &lt;link&gt; tags to paste.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <div role="tablist" class="tabbar" aria-label="Image tool">
+    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="false" class="tab-btn">Resize</a>
+    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="false" class="tab-btn">Compress</a>
+    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="false" class="tab-btn">Crop</a>
+    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="false" class="tab-btn">Convert</a>
+    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn">Rotate &amp; Flip</a>
+    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn">To Base64</a>
+    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="true" aria-current="page" class="tab-btn active">Favicon</a>
+  </div>
+
+  <section id="panel-favicon" class="tool-panel tab-panel active" data-prefix="favicon">
+    <div class="dropzone" id="favicon-drop">
+      <input type="file" id="favicon-file" accept="image/*" aria-label="Choose an image to generate favicons from">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop a square-ish logo or image</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — non-square images are center-cropped</p>
+    </div>
+    <div class="workspace" id="favicon-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="favicon-fname"></span><button class="ghost change-file-btn" type="button" id="favicon-change">Change image</button></div>
+        <h2>Generated sizes</h2>
+        <div class="favicon-grid" id="favicon-grid"></div>
+        <div class="error-banner" id="favicon-error" role="alert"></div>
+      </div>
+      <div class="panel">
+        <h2>Add them to your site</h2>
+        <p style="color:var(--ink-dim);font-size:13.5px;margin-top:0;">Download each PNG above into your site's root folder using the filenames shown, then paste this into your <code>&lt;head&gt;</code>:</p>
+        <div class="snippet-block">
+          <div class="snippet-label"><span>HTML</span><button type="button" class="icon-btn" id="favicon-copy-snippet" style="position:relative;">Copy<span class="copy-flash" id="favicon-copy-snippet-flash">Copied!</span></button></div>
+          <textarea class="code-area" id="favicon-snippet" rows="6" readonly spellcheck="false"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">About this favicon generator</h2>
+    <p>Modern sites need a favicon in several sizes: small ones for browser tabs, a 180px version for iOS home screens, and 192/512px versions for Android and PWA install icons. This tool takes one image, center-crops it to a square if it isn't already one, and renders all six standard sizes at once — <strong>16, 32, 48, 180, 192, and 512px</strong> — each as its own downloadable PNG, plus the exact <code>&lt;link&gt;</code> tags to paste into your page's <code>&lt;head&gt;</code>.</p>
+    <h2>How to generate a favicon</h2>
+    <ol>
+      <li>Drop, browse to, or paste a logo or image into the box above (square works best).</li>
+      <li>Download each generated size using the filename shown under it.</li>
+      <li>Place the downloaded files in your site's root folder.</li>
+      <li>Copy the HTML snippet into your page's <code>&lt;head&gt;</code>.</li>
+    </ol>
+    <h2>FAQ</h2>
+    <div class="faq-item">
+      <h3>My source image isn't square — what happens?</h3>
+      <p>It's automatically center-cropped to the largest possible square before resizing, so the important part of a roughly-centered logo stays intact. For full control over the crop, use the <a href="/crop-image">cropper</a> first.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Do I need a .ico file too?</h3>
+      <p>Not for modern browsers — every current browser accepts a PNG favicon via <code>&lt;link rel="icon"></code>. The generated 16/32/48px PNGs cover that; the 180px file is for Apple touch icons, and 192/512px cover Android/PWA icons.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Why do the filenames matter?</h3>
+      <p>The HTML snippet references each size by its conventional filename (e.g. <code>apple-touch-icon.png</code>, <code>android-chrome-192x192.png</code>). Keep the downloaded names as-is, or update the snippet's <code>href</code> values to match whatever you rename them to.</p>
+    </div>
+    <h2>More image tools</h2>
+    <ul>
+      <li><a href="/crop-image">Image Cropper</a></li>
+      <li><a href="/resize-image">Image Resizer</a></li>
+      <li><a href="/convert-image">Image Converter</a></li>
+      <li><a href="/">All tools on one page (home)</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

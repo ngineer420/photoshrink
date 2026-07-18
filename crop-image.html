@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Image Cropper — Drag-to-Crop Photos Online, Free — photoshrink.net</title>
+<meta name="description" content="Crop an image with a draggable, resizable crop box and optional aspect-ratio presets (1:1, 4:3, 16:9, 3:2). Free, and 100% in your browser — nothing is uploaded.">
+<link rel="canonical" href="https://photoshrink.net/crop-image">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Image Cropper — Drag-to-Crop Photos Online, Free">
+<meta property="og:description" content="Crop an image with a draggable, resizable crop box and aspect-ratio presets. Runs entirely client-side.">
+<meta property="og:url" content="https://photoshrink.net/crop-image">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Image Cropper — Drag-to-Crop Photos Online, Free">
+<meta name="twitter:description" content="Crop an image with a draggable, resizable crop box. Runs entirely client-side — nothing is uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Image Cropper — PhotoShrink",
+  "url": "https://photoshrink.net/crop-image",
+  "applicationCategory": "PhotoApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Free browser-based image cropper with a draggable, resizable crop box and aspect-ratio presets."
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side · nothing uploaded</span>
+    <h1>Image <span class="hl">Cropper</span></h1>
+    <p class="sub">Drag to move, drag a corner to resize — with optional aspect-ratio presets.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <div role="tablist" class="tabbar" aria-label="Image tool">
+    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="false" class="tab-btn">Resize</a>
+    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="false" class="tab-btn">Compress</a>
+    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="true" aria-current="page" class="tab-btn active">Crop</a>
+    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="false" class="tab-btn">Convert</a>
+    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn">Rotate &amp; Flip</a>
+    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn">To Base64</a>
+    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn">Favicon</a>
+  </div>
+
+  <section id="panel-crop" class="tool-panel tab-panel active" data-prefix="crop">
+    <div class="dropzone" id="crop-drop">
+      <input type="file" id="crop-file" accept="image/*" aria-label="Choose an image to crop">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to crop</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="crop-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="crop-fname"></span><button class="ghost change-file-btn" type="button" id="crop-change">Change image</button></div>
+        <h2>Drag to move · drag a corner to resize</h2>
+        <div class="preview-stage">
+          <div class="crop-stage-wrap" id="crop-stage-wrap">
+            <canvas id="crop-canvas"></canvas>
+            <div class="crop-box" id="crop-box">
+              <div class="crop-handle nw" data-corner="nw"></div>
+              <div class="crop-handle ne" data-corner="ne"></div>
+              <div class="crop-handle sw" data-corner="sw"></div>
+              <div class="crop-handle se" data-corner="se"></div>
+            </div>
+          </div>
+        </div>
+        <div class="meta-row" id="crop-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Crop settings</h2>
+        <div class="field">
+          <label>Aspect ratio</label>
+          <div class="segmented" id="crop-aspect-group">
+            <button type="button" data-ratio="0" aria-pressed="true">Free</button>
+            <button type="button" data-ratio="1">1:1</button>
+            <button type="button" data-ratio="1.3333">4:3</button>
+            <button type="button" data-ratio="1.7778">16:9</button>
+            <button type="button" data-ratio="1.5">3:2</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="crop-format">Output format</label>
+          <select id="crop-format">
+            <option value="keep">Keep original</option>
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="crop-download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download cropped image
+          </button>
+        </div>
+        <div class="error-banner" id="crop-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">About this image cropper</h2>
+    <p>Once your photo loads, a crop box appears over it — drag the middle to move it, drag any corner handle to resize it. Pick a fixed <strong>aspect ratio</strong> if you need the result to fit a specific frame (square avatars, 16:9 thumbnails, 4:3 prints), or leave it on <strong>Free</strong> for full control. The download uses the image's real pixel resolution, not the (possibly scaled-down) preview, so the cropped file is never blurrier than the source deserves.</p>
+    <h2>How to crop an image</h2>
+    <ol>
+      <li>Drop, browse to, or paste a photo into the box above.</li>
+      <li>Drag the crop box into place, and drag a corner to resize it.</li>
+      <li>Pick an aspect-ratio preset if you need an exact shape.</li>
+      <li>Click Download to save just the selected area.</li>
+    </ol>
+    <h2>FAQ</h2>
+    <div class="faq-item">
+      <h3>Will the cropped image be blurry?</h3>
+      <p>No — the crop is computed against the original full-resolution image, not the on-screen preview. What you see is a scaled-down preview for convenience only.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Can I crop to a specific aspect ratio?</h3>
+      <p>Yes — use the 1:1, 4:3, 16:9, or 3:2 presets, or "Free" for any shape you draw by hand.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What format is the cropped download?</h3>
+      <p>By default it keeps the original format. Change it in the Output format dropdown, or use the dedicated <a href="/convert-image">converter</a> afterward.</p>
+    </div>
+    <h2>More image tools</h2>
+    <ul>
+      <li><a href="/resize-image">Image Resizer</a></li>
+      <li><a href="/rotate-image">Rotate &amp; Flip</a></li>
+      <li><a href="/compress-image">Image Compressor</a></li>
+      <li><a href="/">All tools on one page (home)</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

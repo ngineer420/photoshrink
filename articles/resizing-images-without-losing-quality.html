@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Resizing Images Without Losing Quality — photoshrink.net</title>
+<meta name="description" content="Why downscaling is safe but upscaling isn't, how aspect ratio math works, and how to pick the right output size for web, print, or social media.">
+<link rel="canonical" href="https://photoshrink.net/articles/resizing-images-without-losing-quality.html">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+    </a>
+  </div>
+</header>
+<main class="container-narrow">
+  <h1>Resizing Images Without Losing Quality</h1>
+
+  <p>"Resize" covers two very different operations that happen to share a UI: making an image smaller, and making it bigger. One of them is nearly free. The other has a hard ceiling you can't slider your way past.</p>
+
+  <h2>Downscaling: mostly safe</h2>
+  <p>Shrinking an image throws away pixels the original photo actually captured — a 4000×3000 photo resized to 1200×900 is discarding real detail, but there was more detail there than most uses need anyway. Because you're removing information rather than inventing it, downscaling rarely looks bad even at fairly aggressive ratios. The main thing to watch is text or fine line art getting blurry at very small sizes — for icons and logos specifically, a purpose-built export at the target size (or the <a href="/favicon-generator">favicon generator</a>, which resizes to each exact size individually) beats one aggressive downscale.</p>
+
+  <h2>Upscaling: has a ceiling</h2>
+  <p>Enlarging an image beyond its native resolution means inventing pixels that were never captured. Standard resizing algorithms do this by interpolating — blending neighboring pixels to estimate what the in-between ones probably look like. That works fine for small increases, but the more you enlarge, the softer and less detailed the result gets, because interpolation can only ever produce a smoothed guess, not real detail. There's no setting in a basic resizer that gets around this — it's a fundamental limit of the technique, not a bug. If you need a small image significantly larger and it has to look sharp, you need an AI upscaling model built for that specific job, not a general resize tool.</p>
+
+  <h2>Aspect ratio: why locking it matters</h2>
+  <p>An image's aspect ratio is just its width divided by its height — a 1600×900 photo is 16:9. Change only the width without changing the height proportionally and the image stretches or squashes, which is almost always visually wrong (people's faces get subtly wide or tall, straight lines stay straight but proportions feel "off" in a way that's hard to place). Locking aspect ratio, as our <a href="/resize-image">resizer</a> does by default, means changing one dimension automatically recalculates the other to preserve the ratio — width ÷ height stays constant. Only unlock it if you specifically need to force a mismatched shape, like fitting a photo into an ad slot with a fixed non-native ratio (usually better solved by cropping first).</p>
+
+  <h2>Picking a target size</h2>
+  <ul>
+    <li><strong>Web content</strong> — match the largest size it will actually display at (accounting for high-DPI screens, roughly 1.5–2× the CSS display size is enough headroom).</li>
+    <li><strong>Social media</strong> — each platform has recommended dimensions; oversized images just get re-compressed by the platform anyway, often worse than if you'd sized it yourself.</li>
+    <li><strong>Print</strong> — needs much higher resolution than screens; a rule of thumb is 300 pixels per inch of the final printed size.</li>
+  </ul>
+
+  <h2>Keep reading</h2>
+  <ul>
+    <li><a href="/articles/how-image-compression-works.html">How image compression actually works</a></li>
+    <li><a href="/articles/jpeg-vs-png-vs-webp.html">JPEG vs. PNG vs. WebP: which format should you use?</a></li>
+    <li><a href="/resize-image">Try the image resizer</a></li>
+  </ul>
+</main>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

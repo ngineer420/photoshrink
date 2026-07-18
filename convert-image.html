@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Image Converter — PNG to JPG, JPG to WebP &amp; More, Free — photoshrink.net</title>
+<meta name="description" content="Convert images between PNG, JPG, and WebP with a quality slider for lossy formats. Free, and 100% in your browser — nothing is uploaded.">
+<link rel="canonical" href="https://photoshrink.net/convert-image">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Image Converter — PNG to JPG, JPG to WebP &amp; More, Free">
+<meta property="og:description" content="Convert images between PNG, JPG, and WebP with a quality slider for lossy formats. Runs entirely client-side.">
+<meta property="og:url" content="https://photoshrink.net/convert-image">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Image Converter — PNG to JPG, JPG to WebP &amp; More, Free">
+<meta name="twitter:description" content="Convert images between PNG, JPG, and WebP. Runs entirely client-side — nothing is uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Image Converter — PhotoShrink",
+  "url": "https://photoshrink.net/convert-image",
+  "applicationCategory": "PhotoApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Free browser-based image format converter: PNG, JPG, and WebP, with a quality slider for lossy output."
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side · nothing uploaded</span>
+    <h1>Image <span class="hl">Converter</span></h1>
+    <p class="sub">PNG ⇄ JPG ⇄ WebP — switch formats in one click.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <div role="tablist" class="tabbar" aria-label="Image tool">
+    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="false" class="tab-btn">Resize</a>
+    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="false" class="tab-btn">Compress</a>
+    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="false" class="tab-btn">Crop</a>
+    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="true" aria-current="page" class="tab-btn active">Convert</a>
+    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn">Rotate &amp; Flip</a>
+    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn">To Base64</a>
+    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn">Favicon</a>
+  </div>
+
+  <section id="panel-convert" class="tool-panel tab-panel active" data-prefix="convert">
+    <div class="dropzone" id="convert-drop">
+      <input type="file" id="convert-file" accept="image/*" aria-label="Choose an image to convert">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to convert</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="convert-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="convert-fname"></span><button class="ghost change-file-btn" type="button" id="convert-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><canvas id="convert-canvas"></canvas></div>
+        <div class="meta-row" id="convert-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Convert settings</h2>
+        <div class="field">
+          <label for="convert-format">Convert to</label>
+          <select id="convert-format">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+        <p class="dz-sub" id="convert-bg-note" hidden style="text-align:left;margin:-6px 0 14px;">JPEG doesn't support transparency — see-through areas will be filled white.</p>
+        <div class="field" id="convert-quality-field" hidden>
+          <div class="range-label"><span>Quality</span><span id="convert-quality-value">85%</span></div>
+          <input type="range" id="convert-quality" min="1" max="100" value="85">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="convert-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download converted image
+          </button>
+        </div>
+        <div class="error-banner" id="convert-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">About this image converter</h2>
+    <p>Drop in a photo and pick a target format. Converting <em>to</em> JPEG fills any transparent areas with white first, since JPEG has no alpha channel — everything else (PNG, WebP) preserves transparency. For JPEG and WebP output you also get a quality slider, since both are lossy formats.</p>
+    <h2>How to convert an image</h2>
+    <ol>
+      <li>Drop, browse to, or paste an image into the box above.</li>
+      <li>Choose the format you want to convert to.</li>
+      <li>Adjust quality if converting to JPEG or WebP.</li>
+      <li>Click Download.</li>
+    </ol>
+    <h2>FAQ</h2>
+    <div class="faq-item">
+      <h3>Why did my transparent PNG get a white background?</h3>
+      <p>That happens only when converting to JPEG, which can't store transparency at all. Convert to PNG or WebP instead if you need to keep a transparent background.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Which format is smallest?</h3>
+      <p>For photos, WebP is usually the smallest at a given visual quality, followed by JPEG. PNG is best for graphics, logos, and screenshots with flat colors or text. See the <a href="/articles/jpeg-vs-png-vs-webp.html">format guide</a> for details.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Can I convert and resize at the same time?</h3>
+      <p>This tool only changes format. Use the <a href="/resize-image">resizer</a> first (it also has a format option) if you want both in one pass.</p>
+    </div>
+    <h2>More image tools</h2>
+    <ul>
+      <li><a href="/compress-image">Image Compressor</a></li>
+      <li><a href="/resize-image">Image Resizer</a></li>
+      <li><a href="/image-to-base64">Image to Base64</a></li>
+      <li><a href="/">All tools on one page (home)</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

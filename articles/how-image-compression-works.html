@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>How Image Compression Actually Works — photoshrink.net</title>
+<meta name="description" content="What the quality slider on a JPEG or WebP export actually does — chroma subsampling, quantization, and why some photos shrink 90% while others barely move.">
+<link rel="canonical" href="https://photoshrink.net/articles/how-image-compression-works.html">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+    </a>
+  </div>
+</header>
+<main class="container-narrow">
+  <h1>How Image Compression Actually Works</h1>
+
+  <p>Drag a quality slider from 100 down to 60 and a photo's file size might drop by half — but drag the same slider on a different image and barely anything changes. That's not random. Lossy compressors like JPEG and WebP exploit specific, predictable weaknesses in how human vision works, and understanding them makes the quality slider a lot less mysterious.</p>
+
+  <h2>Your eyes are bad at color, great at brightness</h2>
+  <p>Human vision resolves fine detail in <em>brightness</em> (luminance) far better than it resolves fine detail in <em>color</em> (chrominance). Compressors exploit this directly with a technique called <strong>chroma subsampling</strong>: they keep full-resolution brightness data but store color information at a lower resolution, effectively blending color across small blocks of pixels. You genuinely can't see the difference on most photos, but it accounts for a big chunk of the file-size savings before any "quality" setting is even touched.</p>
+
+  <h2>What the quality slider controls</h2>
+  <p>Underneath, JPEG and lossy WebP break the image into small blocks and transform each one into a set of frequency components — roughly, "how much fine detail vs. broad shape" is in that block. The quality setting controls <strong>quantization</strong>: how coarsely those frequency components get rounded off. High quality rounds gently, preserving subtle detail. Low quality rounds aggressively, discarding the fine components first — since removing fine detail is far less visually obvious than removing broad shape. Push it too far and you start losing broad shape too, which is when you see blocky artifacts and smudged edges.</p>
+
+  <h2>Why identical sliders give wildly different results</h2>
+  <p>The quality number isn't a fixed percentage of file size — it's a rounding aggressiveness. A photo that's already full of fine, chaotic detail (grass, gravel, fabric texture) has a lot of "expensive" high-frequency information to begin with, so compressing it hits a floor quickly and quality loss becomes visible sooner. A photo dominated by smooth gradients (sky, skin, out-of-focus backgrounds) has very little high-frequency information, so it compresses dramatically even at fairly high quality settings with almost no visible change. This is why our <a href="/compress-image">compressor</a> shows a live before/after size instead of promising a fixed percentage — the honest answer depends on the photo.</p>
+
+  <h2>Practical takeaways</h2>
+  <ul>
+    <li>80–90% quality is a safe starting point for photos — most people can't tell it apart from the original.</li>
+    <li>Busy, high-detail photos need a higher quality setting to look clean than smooth, low-detail ones.</li>
+    <li>Re-compressing an already-lossy JPEG loses a little more detail each time — always compress from the original file when you can, not from a previous export.</li>
+    <li>PNG is the wrong tool for photos precisely because it refuses to exploit any of this — it's lossless by design, which is exactly right for graphics and exactly wasteful for photography.</li>
+  </ul>
+
+  <h2>Keep reading</h2>
+  <ul>
+    <li><a href="/articles/jpeg-vs-png-vs-webp.html">JPEG vs. PNG vs. WebP: which format should you use?</a></li>
+    <li><a href="/articles/resizing-images-without-losing-quality.html">Resizing images without losing quality</a></li>
+    <li><a href="/compress-image">Try the image compressor</a></li>
+  </ul>
+</main>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Image Resizer — Resize Photos by Pixels or Percent, Free — photoshrink.net</title>
+<meta name="description" content="Resize an image by exact pixels or by percentage, with an aspect-ratio lock and PNG/JPEG/WebP output. Free, and 100% in your browser — nothing is uploaded.">
+<link rel="canonical" href="https://photoshrink.net/resize-image">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Image Resizer — Resize Photos by Pixels or Percent, Free">
+<meta property="og:description" content="Resize an image by exact pixels or by percentage, with an aspect-ratio lock and PNG/JPEG/WebP output. Runs entirely client-side.">
+<meta property="og:url" content="https://photoshrink.net/resize-image">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Image Resizer — Resize Photos by Pixels or Percent, Free">
+<meta name="twitter:description" content="Resize an image by exact pixels or by percentage. Runs entirely client-side — nothing is uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Image Resizer — PhotoShrink",
+  "url": "https://photoshrink.net/resize-image",
+  "applicationCategory": "PhotoApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Free browser-based image resizer: resize by exact pixels or percentage, with aspect-ratio lock and PNG/JPEG/WebP output."
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side · nothing uploaded</span>
+    <h1>Image <span class="hl">Resizer</span></h1>
+    <p class="sub">Resize by exact pixels or by percentage, with an aspect-ratio lock so nothing stretches.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <div role="tablist" class="tabbar" aria-label="Image tool">
+    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="true" aria-current="page" class="tab-btn active">Resize</a>
+    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="false" class="tab-btn">Compress</a>
+    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="false" class="tab-btn">Crop</a>
+    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="false" class="tab-btn">Convert</a>
+    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn">Rotate &amp; Flip</a>
+    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn">To Base64</a>
+    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn">Favicon</a>
+  </div>
+
+  <section id="panel-resize" class="tool-panel tab-panel active" data-prefix="resize">
+    <div class="dropzone" id="resize-drop">
+      <input type="file" id="resize-file" accept="image/*" aria-label="Choose an image to resize">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to resize</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+    </div>
+    <div class="workspace" id="resize-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="resize-fname"></span><button class="ghost change-file-btn" type="button" id="resize-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><canvas id="resize-canvas"></canvas></div>
+        <div class="meta-row" id="resize-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Resize settings</h2>
+        <div class="field">
+          <label>Unit</label>
+          <div class="segmented" id="resize-unit-group">
+            <button type="button" id="resize-unit-px" aria-pressed="true">Pixels</button>
+            <button type="button" id="resize-unit-percent" aria-pressed="false">Percent</button>
+          </div>
+        </div>
+        <div class="field field-row" id="resize-dimension-field">
+          <div>
+            <label for="resize-width">Width (px)</label>
+            <input type="number" id="resize-width" min="1" max="20000">
+          </div>
+          <div>
+            <label for="resize-height">Height (px)</label>
+            <input type="number" id="resize-height" min="1" max="20000">
+          </div>
+        </div>
+        <div class="field" id="resize-percent-field" hidden>
+          <label for="resize-percent">Scale (%)</label>
+          <input type="number" id="resize-percent" min="1" max="500" value="100">
+        </div>
+        <div class="field">
+          <div class="checkbox-row">
+            <label><input type="checkbox" id="resize-lock" checked> Lock aspect ratio</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="resize-format">Output format</label>
+          <select id="resize-format">
+            <option value="keep">Keep original</option>
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+        <div class="field" id="resize-quality-field" hidden>
+          <div class="range-label"><span>Quality</span><span id="resize-quality-value">85%</span></div>
+          <input type="range" id="resize-quality" min="1" max="100" value="85">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="resize-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download resized image
+          </button>
+        </div>
+        <div class="error-banner" id="resize-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">About this image resizer</h2>
+    <p>Drop in a photo, then set a target size either as exact <strong>pixels</strong> (great for meeting a platform's upload limits) or as a <strong>percentage</strong> of the original (great for quick scaling down). Keep <strong>Lock aspect ratio</strong> on and the other dimension updates automatically so nothing looks stretched or squashed. Pick an output format — or leave it on "Keep original" — and download the result; the file never leaves your device.</p>
+    <h2>How to resize an image</h2>
+    <ol>
+      <li>Drop, browse to, or paste an image into the box above.</li>
+      <li>Choose Pixels or Percent, then enter your target size.</li>
+      <li>Leave aspect ratio locked unless you specifically want to distort the image.</li>
+      <li>Pick an output format if you want to change it, then click Download.</li>
+    </ol>
+    <h2>FAQ</h2>
+    <div class="faq-item">
+      <h3>Will resizing make my photo blurry?</h3>
+      <p>Shrinking an image (downscaling) rarely looks bad. Enlarging it (upscaling) beyond its original resolution can look soft, since the tool has to invent new pixel detail that was never captured — there's a limit to how far you can push it before it's visibly blurry.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What's the difference between resizing and compressing?</h3>
+      <p>Resizing changes the pixel dimensions (how many pixels wide/tall). Compressing keeps the dimensions the same but reduces file size by simplifying the image data. Use both together — the <a href="/compress-image">compressor</a> — for the smallest possible file.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Which output format should I pick?</h3>
+      <p>Keep the original unless you have a reason not to. Read our <a href="/articles/jpeg-vs-png-vs-webp.html">JPEG vs. PNG vs. WebP guide</a> if you're not sure — or use the <a href="/convert-image">converter</a> for a dedicated format-swap tool.</p>
+    </div>
+    <h2>More image tools</h2>
+    <ul>
+      <li><a href="/compress-image">Image Compressor</a></li>
+      <li><a href="/crop-image">Image Cropper</a></li>
+      <li><a href="/convert-image">Image Converter</a></li>
+      <li><a href="/rotate-image">Rotate &amp; Flip</a></li>
+      <li><a href="/">All tools on one page (home)</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>
