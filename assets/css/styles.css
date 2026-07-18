@@ -397,7 +397,7 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
 .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
 .footer-links a { color: var(--ink-dim); }
 
-.erabbit-mark { display: block; width: 10px; margin: 0 20px 12px auto; line-height: 0; max-width: var(--maxw); }
+.erabbit-mark { display: block; width: 10px; margin: 0 0 0 auto; line-height: 0; }
 .erabbit-mark img { display: block; width: 10px; height: 10px; margin-left: auto; }
 
 /* ---------- misc ---------- */
