@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <title>PhotoShrink — Free Image Resizer, Compressor &amp; Converter (100% Browser-Based)</title>
-<meta name="description" content="Resize, compress, crop, convert, rotate, and generate favicons from photos — free, and 100% client-side. Your images never leave your browser: nothing is ever uploaded.">
+<meta name="description" content="Resize, compress, crop, convert, rotate, strip EXIF and GPS data, and generate favicons from photos — free, and 100% client-side. Your images never leave your browser: nothing is ever uploaded.">
 <link rel="canonical" href="https://photoshrink.net/">
 <meta name="theme-color" content="#fbf6ee">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="PhotoShrink — Free Image Resizer, Compressor &amp; Converter">
-<meta property="og:description" content="Seven free image tools that run entirely in your browser: resize, compress, crop, convert, rotate/flip, image-to-Base64, and favicon generation. Nothing is ever uploaded.">
+<meta property="og:description" content="Eight free image tools that run entirely in your browser: resize, compress, crop, convert, rotate/flip, image-to-Base64, favicon generation, and EXIF/GPS metadata stripping. Nothing is ever uploaded.">
 <meta property="og:url" content="https://photoshrink.net/">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="PhotoShrink — Free Image Resizer, Compressor &amp; Converter">
-<meta name="twitter:description" content="Seven free image tools that run entirely in your browser. Nothing is ever uploaded.">
+<meta name="twitter:description" content="Eight free image tools that run entirely in your browser. Nothing is ever uploaded.">
 
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/styles.css">
@@ -29,7 +29,7 @@
   "applicationCategory": "PhotoApplication",
   "operatingSystem": "Any",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "description": "Free browser-based image toolkit: resize, compress, crop, convert, rotate/flip, image-to-Base64, and favicon generation. All processing happens on-device using the Canvas API — nothing is ever uploaded."
+  "description": "Free browser-based image toolkit: resize, compress, crop, convert, rotate/flip, image-to-Base64, favicon generation, and EXIF/GPS metadata viewing and stripping — with batch processing and ZIP download. All processing happens on-device — nothing is ever uploaded."
 }
 </script>
 
@@ -54,7 +54,7 @@
   <div class="hero">
     <span class="eyebrow">100% client-side · nothing uploaded</span>
     <h1>Shrink, crop &amp; convert photos<br><span class="hl">without the upload</span></h1>
-    <p class="sub">Resize, compress, crop, convert, rotate, Base64-encode, and generate favicons from your photos — seven free tools that run entirely on your device.</p>
+    <p class="sub">Resize, compress, crop, convert, rotate, Base64-encode, strip hidden EXIF and GPS data, and generate favicons — eight free tools that run entirely on your device, one at a time or a whole folder at once.</p>
 
     <div class="squeeze-demo">
       <div class="squeeze-card before">
@@ -99,15 +99,16 @@
     <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn" tabindex="-1">Rotate &amp; Flip</a>
     <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn" tabindex="-1">To Base64</a>
     <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn" tabindex="-1">Favicon</a>
+    <a role="tab" id="tab-exif" href="/exif-viewer" aria-controls="panel-exif" aria-selected="false" class="tab-btn" tabindex="-1">Metadata</a>
   </div>
 
   <!-- ===================== RESIZE ===================== -->
   <section role="tabpanel" id="panel-resize" aria-labelledby="tab-resize" class="tool-panel tab-panel active" data-prefix="resize">
     <div class="dropzone" id="resize-drop">
-      <input type="file" id="resize-file" accept="image/*" aria-label="Choose an image to resize">
+      <input type="file" id="resize-file" accept="image/*" multiple aria-label="Choose an image to resize">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-      <p class="dz-title">Drop an image to resize</p>
-      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+      <p class="dz-title">Drop images to resize</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to process a whole batch</p>
     </div>
     <div class="workspace" id="resize-workspace" hidden>
       <div class="panel">
@@ -163,6 +164,19 @@
             Download resized image
           </button>
         </div>
+        <div class="batch" id="resize-batch" hidden>
+          <div class="batch-head">
+            <h3>Batch queue <span class="batch-count" id="resize-batch-count"></span></h3>
+            <button type="button" class="ghost" id="resize-batch-clear">Clear</button>
+          </div>
+          <ul class="batch-list" id="resize-batch-list"></ul>
+          <div class="batch-bar"><span id="resize-batch-bar"></span></div>
+          <div class="btn-row">
+            <button type="button" class="primary" id="resize-batch-run">Process all</button>
+            <button type="button" class="ghost" id="resize-batch-zip" disabled>Download ZIP</button>
+          </div>
+          <p class="batch-summary" id="resize-batch-summary" role="status"></p>
+        </div>
         <div class="error-banner" id="resize-error" role="alert"></div>
       </div>
     </div>
@@ -171,10 +185,10 @@
   <!-- ===================== COMPRESS ===================== -->
   <section role="tabpanel" id="panel-compress" aria-labelledby="tab-compress" class="tool-panel tab-panel" data-prefix="compress" hidden>
     <div class="dropzone" id="compress-drop">
-      <input type="file" id="compress-file" accept="image/*" aria-label="Choose an image to compress">
+      <input type="file" id="compress-file" accept="image/*" multiple aria-label="Choose an image to compress">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-      <p class="dz-title">Drop an image to compress</p>
-      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+      <p class="dz-title">Drop images to compress</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to process a whole batch</p>
     </div>
     <div class="workspace" id="compress-workspace" hidden>
       <div class="panel">
@@ -202,6 +216,19 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
             Download compressed image
           </button>
+        </div>
+        <div class="batch" id="compress-batch" hidden>
+          <div class="batch-head">
+            <h3>Batch queue <span class="batch-count" id="compress-batch-count"></span></h3>
+            <button type="button" class="ghost" id="compress-batch-clear">Clear</button>
+          </div>
+          <ul class="batch-list" id="compress-batch-list"></ul>
+          <div class="batch-bar"><span id="compress-batch-bar"></span></div>
+          <div class="btn-row">
+            <button type="button" class="primary" id="compress-batch-run">Process all</button>
+            <button type="button" class="ghost" id="compress-batch-zip" disabled>Download ZIP</button>
+          </div>
+          <p class="batch-summary" id="compress-batch-summary" role="status"></p>
         </div>
         <div class="error-banner" id="compress-error" role="alert"></div>
       </div>
@@ -268,10 +295,10 @@
   <!-- ===================== CONVERT ===================== -->
   <section role="tabpanel" id="panel-convert" aria-labelledby="tab-convert" class="tool-panel tab-panel" data-prefix="convert" hidden>
     <div class="dropzone" id="convert-drop">
-      <input type="file" id="convert-file" accept="image/*" aria-label="Choose an image to convert">
+      <input type="file" id="convert-file" accept="image/*" multiple aria-label="Choose an image to convert">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-      <p class="dz-title">Drop an image to convert</p>
-      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+      <p class="dz-title">Drop images to convert</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to process a whole batch</p>
     </div>
     <div class="workspace" id="convert-workspace" hidden>
       <div class="panel">
@@ -300,6 +327,19 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
             Download converted image
           </button>
+        </div>
+        <div class="batch" id="convert-batch" hidden>
+          <div class="batch-head">
+            <h3>Batch queue <span class="batch-count" id="convert-batch-count"></span></h3>
+            <button type="button" class="ghost" id="convert-batch-clear">Clear</button>
+          </div>
+          <ul class="batch-list" id="convert-batch-list"></ul>
+          <div class="batch-bar"><span id="convert-batch-bar"></span></div>
+          <div class="btn-row">
+            <button type="button" class="primary" id="convert-batch-run">Process all</button>
+            <button type="button" class="ghost" id="convert-batch-zip" disabled>Download ZIP</button>
+          </div>
+          <p class="batch-summary" id="convert-batch-summary" role="status"></p>
         </div>
         <div class="error-banner" id="convert-error" role="alert"></div>
       </div>
@@ -416,10 +456,58 @@
     </div>
   </section>
 
+  <section role="tabpanel" id="panel-exif" aria-labelledby="tab-exif" class="tool-panel tab-panel" data-prefix="exif" hidden>
+    <div class="dropzone" id="exif-drop">
+      <input type="file" id="exif-file" accept="image/jpeg,image/png" multiple aria-label="Choose an image to inspect and strip">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop a photo to see what it's carrying</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to strip a whole batch</p>
+    </div>
+    <div class="error-banner" id="exif-error" role="alert"></div>
+    <div class="workspace" id="exif-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="exif-fname"></span><button class="ghost change-file-btn" type="button" id="exif-change">Change image</button></div>
+        <h2>What this file is carrying</h2>
+        <img id="exif-preview" class="exif-thumb" alt="">
+        <div class="exif-gps" id="exif-gps" hidden>
+          <strong>This photo records where it was taken.</strong>
+          <span class="mono" id="exif-gps-text"></span>
+          <a id="exif-gps-link" href="#" target="_blank" rel="noopener noreferrer">See the spot on a map &rarr;</a>
+        </div>
+        <table class="exif-table"><tbody id="exif-table-body"></tbody></table>
+        <p class="exif-empty" id="exif-empty" hidden>No EXIF metadata found &mdash; there's nothing in this file to give away.</p>
+      </div>
+      <div class="panel">
+        <h2>Strip it out</h2>
+        <p style="color:var(--ink-dim);font-size:13.5px;margin-top:0;">The clean copy is made by removing the metadata segments from the file itself, not by re-saving the picture &mdash; so the image data comes through bit for bit identical. No quality is lost.</p>
+        <div class="meta-row" id="exif-meta"></div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="exif-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download stripped copy
+          </button>
+        </div>
+        <div class="batch" id="exif-batch" hidden>
+          <div class="batch-head">
+            <h3>Batch queue <span class="batch-count" id="exif-batch-count"></span></h3>
+            <button type="button" class="ghost" id="exif-batch-clear">Clear</button>
+          </div>
+          <ul class="batch-list" id="exif-batch-list"></ul>
+          <div class="batch-bar"><span id="exif-batch-bar"></span></div>
+          <div class="btn-row">
+            <button type="button" class="primary" id="exif-batch-run">Process all</button>
+            <button type="button" class="ghost" id="exif-batch-zip" disabled>Download ZIP</button>
+          </div>
+          <p class="batch-summary" id="exif-batch-summary" role="status"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="container-narrow" style="padding-top:44px;">
-    <h2 style="margin-top:0;">Seven image tools, zero uploads</h2>
+    <h2 style="margin-top:0;">Eight image tools, zero uploads</h2>
     <p>PhotoShrink runs every tool locally in your browser using the HTML <strong>Canvas API</strong> — the same engine browsers use to draw web pages. When you drop in a photo, it's decoded and processed entirely on your device; the pixels never touch a network request. That means no upload wait, no file-size limit imposed by a server, and no copy of your photos sitting on someone else's disk.</p>
-    <p>Prefer a dedicated page for one tool? Each one also lives on its own: <a href="/resize-image">Resize</a>, <a href="/compress-image">Compress</a>, <a href="/crop-image">Crop</a>, <a href="/convert-image">Convert</a>, <a href="/rotate-image">Rotate &amp; Flip</a>, <a href="/image-to-base64">Image to Base64</a>, and <a href="/favicon-generator">Favicon Generator</a>.</p>
+    <p>Prefer a dedicated page for one tool? Each one also lives on its own: <a href="/resize-image">Resize</a>, <a href="/compress-image">Compress</a>, <a href="/crop-image">Crop</a>, <a href="/convert-image">Convert</a>, <a href="/rotate-image">Rotate &amp; Flip</a>, <a href="/image-to-base64">Image to Base64</a>, <a href="/favicon-generator">Favicon Generator</a>, and <a href="/exif-viewer">EXIF Viewer &amp; Metadata Stripper</a>.</p>
   </section>
 
   <section class="container-narrow" style="padding-top:0;" id="articles">

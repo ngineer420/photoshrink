@@ -41,6 +41,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://photoshrink.net/exif-viewer</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://photoshrink.net/articles/jpeg-vs-png-vs-webp.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
