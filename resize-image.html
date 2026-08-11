@@ -69,14 +69,15 @@
     <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn">Rotate &amp; Flip</a>
     <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn">To Base64</a>
     <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn">Favicon</a>
+    <a role="tab" id="tab-exif" href="/exif-viewer" aria-controls="panel-exif" aria-selected="false" class="tab-btn">Metadata</a>
   </div>
 
   <section id="panel-resize" class="tool-panel tab-panel active" data-prefix="resize">
     <div class="dropzone" id="resize-drop">
-      <input type="file" id="resize-file" accept="image/*" aria-label="Choose an image to resize">
+      <input type="file" id="resize-file" accept="image/*" multiple aria-label="Choose an image to resize">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-      <p class="dz-title">Drop an image to resize</p>
-      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></p>
+      <p class="dz-title">Drop images to resize</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to process a whole batch</p>
     </div>
     <div class="workspace" id="resize-workspace" hidden>
       <div class="panel">
@@ -131,6 +132,19 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
             Download resized image
           </button>
+        </div>
+        <div class="batch" id="resize-batch" hidden>
+          <div class="batch-head">
+            <h3>Batch queue <span class="batch-count" id="resize-batch-count"></span></h3>
+            <button type="button" class="ghost" id="resize-batch-clear">Clear</button>
+          </div>
+          <ul class="batch-list" id="resize-batch-list"></ul>
+          <div class="batch-bar"><span id="resize-batch-bar"></span></div>
+          <div class="btn-row">
+            <button type="button" class="primary" id="resize-batch-run">Process all</button>
+            <button type="button" class="ghost" id="resize-batch-zip" disabled>Download ZIP</button>
+          </div>
+          <p class="batch-summary" id="resize-batch-summary" role="status"></p>
         </div>
         <div class="error-banner" id="resize-error" role="alert"></div>
       </div>

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>EXIF Viewer &amp; Metadata Stripper — Remove GPS From Photos, Free — photoshrink.net</title>
+<meta name="description" content="See the hidden EXIF metadata in a photo — camera, date, and GPS location — then strip it out losslessly. Free, and 100% in your browser: nothing is uploaded.">
+<link rel="canonical" href="https://photoshrink.net/exif-viewer">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="EXIF Viewer &amp; Metadata Stripper — Remove GPS From Photos">
+<meta property="og:description" content="Read the camera, date and GPS data hidden in a photo, then remove it without re-compressing the image. Runs entirely client-side.">
+<meta property="og:url" content="https://photoshrink.net/exif-viewer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="EXIF Viewer &amp; Metadata Stripper — Remove GPS From Photos">
+<meta name="twitter:description" content="See and strip hidden photo metadata, including GPS coordinates. Runs entirely client-side — nothing is uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "EXIF Viewer & Metadata Stripper — PhotoShrink",
+  "url": "https://photoshrink.net/exif-viewer",
+  "applicationCategory": "PhotoApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Free browser-based EXIF viewer and metadata stripper: read camera, date and GPS tags from JPEG and PNG files, then remove them losslessly."
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side · nothing uploaded</span>
+    <h1>EXIF Viewer &amp; <span class="hl">Metadata Stripper</span></h1>
+    <p class="sub">See the camera, the timestamp and the GPS coordinates hidden in a photo — then remove them.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <div role="tablist" class="tabbar" aria-label="Image tool">
+    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="false" class="tab-btn">Resize</a>
+    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="false" class="tab-btn">Compress</a>
+    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="false" class="tab-btn">Crop</a>
+    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="false" class="tab-btn">Convert</a>
+    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn">Rotate &amp; Flip</a>
+    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn">To Base64</a>
+    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn">Favicon</a>
+    <a role="tab" id="tab-exif" href="/exif-viewer" aria-controls="panel-exif" aria-selected="true" aria-current="page" class="tab-btn active">Metadata</a>
+  </div>
+
+  <section id="panel-exif" class="tool-panel tab-panel active" data-prefix="exif">
+    <div class="dropzone" id="exif-drop">
+      <input type="file" id="exif-file" accept="image/jpeg,image/png" multiple aria-label="Choose an image to inspect and strip">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop a photo to see what it's carrying</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to strip a whole batch</p>
+    </div>
+    <div class="error-banner" id="exif-error" role="alert"></div>
+    <div class="workspace" id="exif-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="exif-fname"></span><button class="ghost change-file-btn" type="button" id="exif-change">Change image</button></div>
+        <h2>What this file is carrying</h2>
+        <img id="exif-preview" class="exif-thumb" alt="">
+        <div class="exif-gps" id="exif-gps" hidden>
+          <strong>This photo records where it was taken.</strong>
+          <span class="mono" id="exif-gps-text"></span>
+          <a id="exif-gps-link" href="#" target="_blank" rel="noopener noreferrer">See the spot on a map &rarr;</a>
+        </div>
+        <table class="exif-table"><tbody id="exif-table-body"></tbody></table>
+        <p class="exif-empty" id="exif-empty" hidden>No EXIF metadata found &mdash; there's nothing in this file to give away.</p>
+      </div>
+      <div class="panel">
+        <h2>Strip it out</h2>
+        <p style="color:var(--ink-dim);font-size:13.5px;margin-top:0;">The clean copy is made by removing the metadata segments from the file itself, not by re-saving the picture &mdash; so the image data comes through bit for bit identical. No quality is lost.</p>
+        <div class="meta-row" id="exif-meta"></div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="exif-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download stripped copy
+          </button>
+        </div>
+        <div class="batch" id="exif-batch" hidden>
+          <div class="batch-head">
+            <h3>Batch queue <span class="batch-count" id="exif-batch-count"></span></h3>
+            <button type="button" class="ghost" id="exif-batch-clear">Clear</button>
+          </div>
+          <ul class="batch-list" id="exif-batch-list"></ul>
+          <div class="batch-bar"><span id="exif-batch-bar"></span></div>
+          <div class="btn-row">
+            <button type="button" class="primary" id="exif-batch-run">Process all</button>
+            <button type="button" class="ghost" id="exif-batch-zip" disabled>Download ZIP</button>
+          </div>
+          <p class="batch-summary" id="exif-batch-summary" role="status"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">About this EXIF viewer and stripper</h2>
+    <p>Almost every photo taken on a phone or a camera carries a block of <strong>EXIF metadata</strong> riding alongside the pixels: which camera and lens took it, the exposure settings, the exact date and time — and, on most phones with location services on, the <strong>GPS coordinates of where you were standing</strong>. None of that is visible in the picture, and all of it travels with the file when you post it to a marketplace listing, attach it to an email, or send it to someone you don't know well.</p>
+    <p>Drop a JPEG or PNG above and this tool reads that block out and shows you exactly what is in there. If the file has coordinates, they're called out at the top with a link to the spot on a map, because seeing your own front door on a map is more persuasive than a row in a table.</p>
+    <h2>Stripping is lossless here</h2>
+    <p>Most "remove EXIF" tools work by re-saving the photo, which quietly re-compresses it and throws away real image detail every time. This one doesn't. A JPEG is a chain of segments and a PNG is a chain of chunks; the metadata lives in its own segments (APP1 for EXIF, APP13 for IPTC, COM for comments) or chunks (<code>tEXt</code>, <code>iTXt</code>, <code>eXIf</code>, <code>tIME</code>). Those are cut out of the byte stream and everything else — including the compressed image data itself — is copied through untouched. The picture that comes out is bit-for-bit the picture that went in, minus the metadata.</p>
+    <h2>How to remove EXIF data from a photo</h2>
+    <ol>
+      <li>Drop, browse to, or paste a JPEG or PNG into the box above.</li>
+      <li>Read what's in the table — camera, lens, date, exposure, and any GPS coordinates.</li>
+      <li>Click <strong>Download stripped copy</strong> for a clean version of the same image.</li>
+      <li>Got a folder of them? Drop several at once and use the batch queue to strip them all and download a ZIP.</li>
+    </ol>
+    <h2>FAQ</h2>
+    <div class="faq-item">
+      <h3>Does removing EXIF reduce the image quality?</h3>
+      <p>No. The metadata is removed at the byte level and the compressed image data is copied across unchanged, so the stripped file decodes to exactly the same pixels. This is the main reason to use a dedicated stripper rather than re-saving the photo in an editor.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Does my photo get uploaded to check it?</h3>
+      <p>No — the file is read with your browser's own File API and parsed in this tab. There is no server to send it to. That matters more here than on any other tool on this site: the whole point is the data you're trying not to share.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Why does my photo have no EXIF at all?</h3>
+      <p>Screenshots, images exported by many design tools, and anything already processed by a social network usually have no EXIF — most platforms strip it on upload. A photo straight off a camera or phone almost always has it.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What about orientation — will my photo end up sideways?</h3>
+      <p>The EXIF orientation tag is removed along with everything else, so a photo that relied on it to display upright may appear rotated in some viewers. If that matters, run it through the <a href="/rotate-image">rotate tool</a> first to bake the correct orientation into the pixels.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Can it handle WebP, HEIC or GIF?</h3>
+      <p>Not yet — JPEG and PNG only, because those are the two formats where the metadata can be removed losslessly with confidence. Convert other formats to JPEG with the <a href="/convert-image">converter</a> first; canvas re-encoding drops the metadata anyway.</p>
+    </div>
+    <h2>More image tools</h2>
+    <ul>
+      <li><a href="/compress-image">Image Compressor</a></li>
+      <li><a href="/resize-image">Image Resizer</a></li>
+      <li><a href="/convert-image">Image Converter</a></li>
+      <li><a href="/articles/why-client-side-image-tools-are-more-private.html">Why client-side image tools are more private</a></li>
+      <li><a href="/">All tools on one page (home)</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

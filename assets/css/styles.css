@@ -78,6 +78,13 @@
 * { box-sizing: border-box; }
 html { color-scheme: light dark; }
 
+/* The UA rule for [hidden] is display:none at the lowest possible specificity,
+   so any component that sets its own display wins and the element stays on
+   screen. That is why every tool page was showing an empty workspace under
+   the dropzone before a file was loaded — .workspace declares display:grid.
+   Every `hidden` in this codebase means "do not show this", so say it once. */
+[hidden] { display: none !important; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
 }
@@ -348,6 +355,73 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
   color: var(--danger); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13.5px; margin-top: 12px;
 }
 .error-banner.show { display: block; }
+
+/* ---------- batch queue ---------- */
+.batch { margin-top: 18px; border-top: 1px solid var(--border-soft); padding-top: 16px; }
+.batch-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.batch-head h3 {
+  font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--ink-faint); margin: 0; font-weight: 800;
+}
+.batch-count { font-family: var(--mono); color: var(--ink-dim); text-transform: none; letter-spacing: 0; font-weight: 600; }
+.batch-head button { font-size: 12.5px; padding: 5px 11px; }
+
+.batch-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; }
+.batch-item {
+  background: var(--paper-inset);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+}
+.batch-item[data-state="working"] { border-color: var(--coral); }
+.batch-item[data-state="error"] { border-color: color-mix(in srgb, var(--danger) 50%, var(--border)); }
+.bi-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.bi-name { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bi-state { flex: none; font-size: 11.5px; font-weight: 700; color: var(--ink-faint); }
+.batch-item[data-state="done"] .bi-state { color: var(--ok); }
+.batch-item[data-state="error"] .bi-state { color: var(--danger); }
+.bi-sizes { font-size: 12px; color: var(--ink-dim); font-family: var(--mono); margin-top: 4px; }
+.bi-sizes strong { color: var(--ink); }
+.bi-sizes .save-tag { color: var(--ok); font-weight: 800; }
+
+.bi-bar, .batch-bar {
+  height: 4px; border-radius: 999px; background: var(--border-soft);
+  overflow: hidden; margin-top: 7px;
+}
+.batch-bar { height: 6px; margin-top: 14px; }
+.bi-bar span, .batch-bar span {
+  display: block; height: 100%; width: 0;
+  background: var(--coral); border-radius: 999px;
+  transition: width .18s ease;
+}
+.batch-item[data-state="done"] .bi-bar span { background: var(--ok); }
+.batch-item[data-state="error"] .bi-bar span { background: var(--danger); }
+.batch-summary { font-size: 12.5px; color: var(--ink-dim); margin: 12px 0 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bi-bar span, .batch-bar span { transition: none; }
+}
+
+/* ---------- EXIF viewer ---------- */
+.exif-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.exif-table tr + tr th, .exif-table tr + tr td { border-top: 1px solid var(--border-soft); }
+.exif-table th {
+  text-align: left; font-weight: 700; color: var(--ink-dim);
+  padding: 7px 12px 7px 0; white-space: nowrap; vertical-align: top; width: 42%;
+}
+.exif-table td { padding: 7px 0; font-family: var(--mono); word-break: break-word; }
+.exif-empty { font-size: 13.5px; color: var(--ink-dim); margin: 0; }
+
+.exif-gps {
+  background: var(--danger-bg);
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
+  border-radius: var(--radius-sm);
+  padding: 12px 14px; margin-bottom: 14px; font-size: 13.5px;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
+}
+.exif-gps strong { color: var(--danger); }
+.exif-gps .mono { font-family: var(--mono); color: var(--ink); }
+.exif-thumb { max-width: 100%; max-height: 200px; border-radius: var(--radius-sm); display: block; margin-bottom: 14px; }
 
 /* ---------- crop tool ---------- */
 .crop-stage-wrap { position: relative; display: inline-block; max-width: 100%; touch-action: none; }

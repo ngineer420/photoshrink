@@ -181,8 +181,425 @@ function buildCssSnippet(dataUri, selector) {
   return `${sel} {\n  background-image: url("${dataUri}");\n}`;
 }
 
+/* ============================= batch + ZIP =============================
+   A ZIP writer in ~90 lines, because pulling in JSZip would mean a bundler
+   and a dependency for a site whose whole pitch is that it is a handful of
+   static files. Entries are STORED, not deflated: the payloads are already
+   JPEG/PNG/WebP, so deflate would burn CPU on every file to save roughly
+   nothing, and storing keeps this small enough to read in one sitting. */
+
+const CRC32_TABLE = (() => {
+  const table = new Int32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    table[n] = c;
+  }
+  return table;
+})();
+
+function crc32(bytes) {
+  let c = -1;
+  for (let i = 0; i < bytes.length; i++) c = CRC32_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+  return (c ^ -1) >>> 0;
+}
+
+// ZIP stores timestamps in the MS-DOS packed format, which starts at 1980
+// and has two-second resolution. Anything earlier is clamped rather than
+// wrapped, since a negative year field makes some extractors refuse the file.
+function toDosDateTime(date) {
+  const year = Math.max(1980, date.getFullYear());
+  return {
+    date: ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
+    time: (date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >> 1),
+  };
+}
+
+// Two files dropped from different folders can share a name, and a ZIP with
+// duplicate entries extracts unpredictably — so collisions get a suffix.
+function uniqueFilenames(names) {
+  const used = new Set();
+  return names.map((name) => {
+    if (!used.has(name)) {
+      used.add(name);
+      return name;
+    }
+    const dot = name.lastIndexOf(".");
+    const stem = dot > 0 ? name.slice(0, dot) : name;
+    const ext = dot > 0 ? name.slice(dot) : "";
+    let n = 2;
+    while (used.has(`${stem} (${n})${ext}`)) n++;
+    const candidate = `${stem} (${n})${ext}`;
+    used.add(candidate);
+    return candidate;
+  });
+}
+
+/* Returns the ZIP as an array of byte chunks rather than one buffer: a batch
+   of 50 photos is easily 100MB, and Blob can stitch chunks without ever
+   needing that much contiguous memory. */
+function buildZipParts(entries, now) {
+  const stamp = toDosDateTime(now || new Date());
+  const encoder = new TextEncoder();
+  const parts = [];
+  const central = [];
+  let offset = 0;
+
+  entries.forEach((entry) => {
+    const nameBytes = encoder.encode(entry.name);
+    const data = entry.data;
+    const crc = crc32(data);
+
+    const local = new Uint8Array(30 + nameBytes.length);
+    const lv = new DataView(local.buffer);
+    lv.setUint32(0, 0x04034b50, true); // local file header signature
+    lv.setUint16(4, 20, true); // version needed
+    lv.setUint16(6, 0x0800, true); // flags: bit 11 = filename is UTF-8
+    lv.setUint16(8, 0, true); // method 0 = stored
+    lv.setUint16(10, stamp.time, true);
+    lv.setUint16(12, stamp.date, true);
+    lv.setUint32(14, crc, true);
+    lv.setUint32(18, data.length, true); // compressed size
+    lv.setUint32(22, data.length, true); // uncompressed size
+    lv.setUint16(26, nameBytes.length, true);
+    lv.setUint16(28, 0, true); // extra field length
+    local.set(nameBytes, 30);
+
+    parts.push(local, data);
+
+    const dir = new Uint8Array(46 + nameBytes.length);
+    const dv = new DataView(dir.buffer);
+    dv.setUint32(0, 0x02014b50, true); // central directory signature
+    dv.setUint16(4, 20, true); // version made by
+    dv.setUint16(6, 20, true); // version needed
+    dv.setUint16(8, 0x0800, true);
+    dv.setUint16(10, 0, true);
+    dv.setUint16(12, stamp.time, true);
+    dv.setUint16(14, stamp.date, true);
+    dv.setUint32(16, crc, true);
+    dv.setUint32(20, data.length, true);
+    dv.setUint32(24, data.length, true);
+    dv.setUint16(28, nameBytes.length, true);
+    dv.setUint32(42, offset, true); // offset of local header
+    dir.set(nameBytes, 46);
+    central.push(dir);
+
+    offset += local.length + data.length;
+  });
+
+  const centralSize = central.reduce((sum, c) => sum + c.length, 0);
+  const end = new Uint8Array(22);
+  const ev = new DataView(end.buffer);
+  ev.setUint32(0, 0x06054b50, true); // end of central directory
+  ev.setUint16(8, entries.length, true);
+  ev.setUint16(10, entries.length, true);
+  ev.setUint32(12, centralSize, true);
+  ev.setUint32(16, offset, true);
+
+  return parts.concat(central, [end]);
+}
+
+function buildZip(entries, now) {
+  const parts = buildZipParts(entries, now);
+  const total = parts.reduce((sum, p) => sum + p.length, 0);
+  const out = new Uint8Array(total);
+  let at = 0;
+  parts.forEach((p) => {
+    out.set(p, at);
+    at += p.length;
+  });
+  return out;
+}
+
+function batchOutputName(sourceName, suffix, ext) {
+  const stem = stripExtension(sourceName || "image");
+  return suffix ? `${stem}-${suffix}.${ext}` : `${stem}.${ext}`;
+}
+
+/* ============================ EXIF ============================
+   A JPEG is a chain of segments; the camera's metadata lives in an APP1
+   segment holding a TIFF structure. Parsing it by hand is a few hundred
+   bytes of pointer-chasing, and it means the EXIF tool ships with the same
+   "no dependencies, nothing uploaded" guarantee as everything else. */
+
+const EXIF_TAGS = {
+  0x010f: "Make",
+  0x0110: "Model",
+  0x0112: "Orientation",
+  0x011a: "XResolution",
+  0x0131: "Software",
+  0x0132: "DateTime",
+  0x013b: "Artist",
+  0x8298: "Copyright",
+  0x829a: "ExposureTime",
+  0x829d: "FNumber",
+  0x8827: "ISO",
+  0x9003: "DateTimeOriginal",
+  0x9004: "DateTimeDigitized",
+  0x9209: "Flash",
+  0x920a: "FocalLength",
+  0xa002: "PixelXDimension",
+  0xa003: "PixelYDimension",
+  0xa405: "FocalLengthIn35mm",
+  0xa434: "LensModel",
+  0xa433: "LensMake",
+};
+
+const GPS_TAGS = {
+  0x0001: "GPSLatitudeRef",
+  0x0002: "GPSLatitude",
+  0x0003: "GPSLongitudeRef",
+  0x0004: "GPSLongitude",
+  0x0005: "GPSAltitudeRef",
+  0x0006: "GPSAltitude",
+  0x001d: "GPSDateStamp",
+};
+
+const EXIF_ORIENTATIONS = {
+  1: "Normal",
+  2: "Mirrored horizontally",
+  3: "Rotated 180°",
+  4: "Mirrored vertically",
+  5: "Mirrored horizontally, rotated 270°",
+  6: "Rotated 90° clockwise",
+  7: "Mirrored horizontally, rotated 90°",
+  8: "Rotated 270° clockwise",
+};
+
+function exifOrientationLabel(value) {
+  return EXIF_ORIENTATIONS[value] || `Unknown (${value})`;
+}
+
+// Degrees/minutes/seconds triple + N/S/E/W reference -> signed decimal.
+function gpsToDecimal(dms, ref) {
+  if (!Array.isArray(dms) || dms.length < 3) return null;
+  const [d, m, s] = dms.map(Number);
+  if (![d, m, s].every(Number.isFinite)) return null;
+  const decimal = d + m / 60 + s / 3600;
+  const negative = ref === "S" || ref === "W";
+  return Math.round((negative ? -decimal : decimal) * 1e6) / 1e6;
+}
+
+function readIfd(view, tiffStart, ifdOffset, littleEndian, dictionary, out) {
+  if (ifdOffset <= 0 || tiffStart + ifdOffset + 2 > view.byteLength) return;
+  const count = view.getUint16(tiffStart + ifdOffset, littleEndian);
+  const SIZES = { 1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1, 9: 4, 10: 8 };
+
+  for (let i = 0; i < count; i++) {
+    const entry = tiffStart + ifdOffset + 2 + i * 12;
+    if (entry + 12 > view.byteLength) return;
+    const tag = view.getUint16(entry, littleEndian);
+    const type = view.getUint16(entry + 2, littleEndian);
+    const num = view.getUint32(entry + 4, littleEndian);
+    const unit = SIZES[type];
+    if (!unit) continue;
+
+    const total = unit * num;
+    const at = total > 4 ? tiffStart + view.getUint32(entry + 8, littleEndian) : entry + 8;
+    if (at < 0 || at + total > view.byteLength) continue;
+
+    // Pointers into the sub-IFDs, which is where almost everything
+    // interesting (and all of the GPS data) actually lives.
+    if (tag === 0x8769) {
+      readIfd(view, tiffStart, view.getUint32(entry + 8, littleEndian), littleEndian, EXIF_TAGS, out);
+      continue;
+    }
+    if (tag === 0x8825) {
+      readIfd(view, tiffStart, view.getUint32(entry + 8, littleEndian), littleEndian, GPS_TAGS, out);
+      continue;
+    }
+
+    const name = dictionary[tag];
+    if (!name) continue;
+
+    let value;
+    if (type === 2) {
+      let s = "";
+      for (let k = 0; k < num; k++) {
+        const c = view.getUint8(at + k);
+        if (c === 0) break;
+        s += String.fromCharCode(c);
+      }
+      value = s.trim();
+      if (!value) continue;
+    } else {
+      const values = [];
+      for (let k = 0; k < num; k++) {
+        const p = at + k * unit;
+        if (type === 1 || type === 7) values.push(view.getUint8(p));
+        else if (type === 3) values.push(view.getUint16(p, littleEndian));
+        else if (type === 4) values.push(view.getUint32(p, littleEndian));
+        else if (type === 9) values.push(view.getInt32(p, littleEndian));
+        else if (type === 5 || type === 10) {
+          const numerator = type === 5 ? view.getUint32(p, littleEndian) : view.getInt32(p, littleEndian);
+          const denominator = type === 5 ? view.getUint32(p + 4, littleEndian) : view.getInt32(p + 4, littleEndian);
+          values.push(denominator === 0 ? 0 : numerator / denominator);
+        }
+      }
+      value = values.length === 1 ? values[0] : values;
+    }
+    out[name] = value;
+  }
+}
+
+/* Finds the Exif APP1 segment in a JPEG and reads IFD0, the Exif sub-IFD
+   and the GPS sub-IFD out of it. Returns null when there is nothing there,
+   which is the common and entirely healthy case for a web-sourced image. */
+function parseExif(bytes) {
+  if (!bytes || bytes.length < 4) return null;
+  if (bytes[0] !== 0xff || bytes[1] !== 0xd8) return null; // not a JPEG
+
+  let i = 2;
+  while (i + 4 <= bytes.length) {
+    if (bytes[i] !== 0xff) {
+      i++;
+      continue;
+    }
+    const marker = bytes[i + 1];
+    if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
+      i += 2;
+      continue;
+    }
+    if (marker === 0xda || marker === 0xd9) break; // start of scan / end of image
+    const length = (bytes[i + 2] << 8) | bytes[i + 3];
+    if (length < 2) break;
+
+    if (marker === 0xe1 && i + 4 + 6 <= bytes.length) {
+      const header = String.fromCharCode(bytes[i + 4], bytes[i + 5], bytes[i + 6], bytes[i + 7]);
+      if (header === "Exif") {
+        const tiffStart = i + 10;
+        if (tiffStart + 8 > bytes.length) return null;
+        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        const byteOrder = view.getUint16(tiffStart, false);
+        if (byteOrder !== 0x4949 && byteOrder !== 0x4d4d) return null;
+        const littleEndian = byteOrder === 0x4949;
+        if (view.getUint16(tiffStart + 2, littleEndian) !== 0x002a) return null;
+        const out = {};
+        readIfd(view, tiffStart, view.getUint32(tiffStart + 4, littleEndian), littleEndian, EXIF_TAGS, out);
+        return Object.keys(out).length ? out : null;
+      }
+    }
+    i += 2 + length;
+  }
+  return null;
+}
+
+/* Strips metadata by removing whole segments/chunks from the byte stream,
+   NOT by re-encoding through a canvas. Re-encoding a JPEG to drop its GPS
+   tag would also re-compress the photo and lose real detail — a stripper
+   that silently degrades the image is worse than no stripper. */
+function stripJpegMetadata(bytes) {
+  if (!bytes || bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) return null;
+  /* Which APP segments go, and — more importantly — which stay:
+       APP0  (0xE0) JFIF          keep, it is structural
+       APP1  (0xE1) Exif / XMP    DROP, this is the whole point
+       APP2  (0xE2) ICC profile   keep — colour management, not metadata.
+                                  Dropping it visibly shifts the colours,
+                                  which would make this a lossy operation
+                                  wearing a lossless label.
+       APP13 (0xED) Photoshop IRB DROP, carries IPTC captions and credits
+       APP14 (0xEE) Adobe         keep, holds the colour-transform flag that
+                                  CMYK/YCCK JPEGs need to decode correctly
+       COM   (0xFE) comment       DROP
+     Everything else in APP3..APP15 is rare vendor metadata and goes. */
+  const KEEP_APP = { 0xe0: true, 0xe2: true, 0xee: true };
+  const DROP = (m) => ((m >= 0xe1 && m <= 0xef) && !KEEP_APP[m]) || m === 0xfe;
+  const keep = [bytes.subarray(0, 2)];
+  const removed = [];
+  let i = 2;
+
+  while (i + 4 <= bytes.length) {
+    if (bytes[i] !== 0xff) break;
+    const marker = bytes[i + 1];
+    if (marker === 0xda) {
+      // Start of scan: everything from here to the end is entropy-coded
+      // image data. Copy it verbatim and stop looking.
+      keep.push(bytes.subarray(i));
+      i = bytes.length;
+      break;
+    }
+    if (marker === 0xd9) {
+      keep.push(bytes.subarray(i, i + 2));
+      i += 2;
+      break;
+    }
+    const length = (bytes[i + 2] << 8) | bytes[i + 3];
+    if (length < 2 || i + 2 + length > bytes.length) break;
+    if (DROP(marker)) removed.push({ marker, bytes: length + 2 });
+    else keep.push(bytes.subarray(i, i + 2 + length));
+    i += 2 + length;
+  }
+  if (i < bytes.length) keep.push(bytes.subarray(i));
+
+  const total = keep.reduce((sum, part) => sum + part.length, 0);
+  const out = new Uint8Array(total);
+  let at = 0;
+  keep.forEach((part) => {
+    out.set(part, at);
+    at += part.length;
+  });
+  return { bytes: out, removed };
+}
+
+const PNG_SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
+// Ancillary chunks that carry text, timestamps or embedded Exif. The
+// critical chunks (IHDR/PLTE/IDAT/IEND) and colour-management ones are kept.
+const PNG_DROP_CHUNKS = ["tEXt", "iTXt", "zTXt", "tIME", "eXIf"];
+
+function stripPngMetadata(bytes) {
+  if (!bytes || bytes.length < 8) return null;
+  for (let i = 0; i < 8; i++) if (bytes[i] !== PNG_SIGNATURE[i]) return null;
+
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const keep = [bytes.subarray(0, 8)];
+  const removed = [];
+  let i = 8;
+
+  while (i + 8 <= bytes.length) {
+    const length = view.getUint32(i, false);
+    const type = String.fromCharCode(bytes[i + 4], bytes[i + 5], bytes[i + 6], bytes[i + 7]);
+    const end = i + 12 + length; // length + type + data + crc
+    if (end > bytes.length) break;
+    if (PNG_DROP_CHUNKS.indexOf(type) !== -1) removed.push({ marker: type, bytes: end - i });
+    else keep.push(bytes.subarray(i, end));
+    i = end;
+    if (type === "IEND") break;
+  }
+
+  const total = keep.reduce((sum, part) => sum + part.length, 0);
+  const out = new Uint8Array(total);
+  let at = 0;
+  keep.forEach((part) => {
+    out.set(part, at);
+    at += part.length;
+  });
+  return { bytes: out, removed };
+}
+
+function stripMetadata(bytes, mimeType) {
+  if (mimeType === "image/png") return stripPngMetadata(bytes);
+  if (mimeType === "image/jpeg") return stripJpegMetadata(bytes);
+  // Sniff, because a file dragged in with the wrong extension still has the
+  // right magic bytes and the user's intent is obvious.
+  if (bytes && bytes[0] === 0xff && bytes[1] === 0xd8) return stripJpegMetadata(bytes);
+  if (bytes && bytes[0] === 137 && bytes[1] === 80) return stripPngMetadata(bytes);
+  return null;
+}
+
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
+    crc32,
+    toDosDateTime,
+    uniqueFilenames,
+    buildZipParts,
+    buildZip,
+    batchOutputName,
+    parseExif,
+    exifOrientationLabel,
+    gpsToDecimal,
+    stripJpegMetadata,
+    stripPngMetadata,
+    stripMetadata,
     clamp,
     formatBytes,
     percentSaved,
@@ -301,12 +718,21 @@ if (typeof document !== "undefined") {
 
     const dropzoneRegistry = {};
 
-    function wireDropzone(prefix, onFile) {
+    // onFiles is optional: batch-capable tools get the whole drop, while
+    // the single-image tools carry on receiving just the first file.
+    function wireDropzone(prefix, onFile, onFiles) {
       const dz = $(prefix + "-drop");
       const input = $(prefix + "-file");
       if (!dz || !input) return;
 
       dropzoneRegistry[prefix] = onFile;
+
+      function deliver(fileList) {
+        const files = Array.prototype.slice.call(fileList || []);
+        if (!files.length) return;
+        if (files[0]) onFile(files[0]);
+        if (onFiles) onFiles(files);
+      }
 
       ["dragenter", "dragover"].forEach((evt) =>
         dz.addEventListener(evt, (e) => {
@@ -318,13 +744,11 @@ if (typeof document !== "undefined") {
       dz.addEventListener("drop", (e) => {
         e.preventDefault();
         dz.classList.remove("drag-over");
-        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-        if (file) onFile(file);
+        deliver(e.dataTransfer && e.dataTransfer.files);
       });
 
       input.addEventListener("change", () => {
-        const file = input.files && input.files[0];
-        if (file) onFile(file);
+        deliver(input.files);
         input.value = "";
       });
       input.addEventListener("paste", (e) => {
@@ -337,6 +761,186 @@ if (typeof document !== "undefined") {
           }
         }
       });
+    }
+
+    /* ---- batch queue ----
+       One engine, mounted by whichever tools have a single set of settings
+       that can sensibly be applied to a whole folder. Files are processed
+       one at a time, awaiting a macrotask between each, so the queue you are
+       watching actually repaints instead of freezing until the last file. */
+    function createBatch(prefix, options) {
+      const root = $(prefix + "-batch");
+      if (!root) return null;
+
+      const list = $(prefix + "-batch-list");
+      const countEl = $(prefix + "-batch-count");
+      const runBtn = $(prefix + "-batch-run");
+      const zipBtn = $(prefix + "-batch-zip");
+      const clearBtn = $(prefix + "-batch-clear");
+      const summary = $(prefix + "-batch-summary");
+      const overall = $(prefix + "-batch-bar");
+
+      let items = [];
+      let running = false;
+
+      const STATE_LABEL = {
+        queued: "Queued",
+        working: "Processing…",
+        done: "Done",
+        error: "Failed",
+      };
+
+      function paintOverall() {
+        const total = items.length || 1;
+        const complete = items.filter((it) => it.state === "done" || it.state === "error").length;
+        const partial = items.reduce((sum, it) => sum + (it.state === "working" ? it.progress : 0), 0);
+        overall.style.width = `${Math.round(((complete + partial) / total) * 100)}%`;
+      }
+
+      function paintItem(item) {
+        const row = item.row;
+        row.dataset.state = item.state;
+        row.querySelector(".bi-state").textContent = item.error || STATE_LABEL[item.state];
+        const pct = item.state === "done" ? 100 : item.state === "error" ? 100 : Math.round(item.progress * 100);
+        row.querySelector(".bi-bar span").style.width = `${pct}%`;
+        const sizes = row.querySelector(".bi-sizes");
+        if (item.result) {
+          const saved = percentSaved(item.file.size, item.result.blob.size);
+          sizes.innerHTML = `${formatBytes(item.file.size)} → <strong>${formatBytes(item.result.blob.size)}</strong> <span class="${saved >= 0 ? "save-tag" : ""}">${saved >= 0 ? "−" : "+"}${Math.abs(saved)}%</span>`;
+        } else {
+          sizes.textContent = formatBytes(item.file.size);
+        }
+      }
+
+      function paintAll() {
+        countEl.textContent = items.length ? `${items.length} file${items.length === 1 ? "" : "s"}` : "";
+        runBtn.disabled = running || !items.some((it) => it.state === "queued" || it.state === "error");
+        runBtn.textContent = running ? "Processing…" : `Process ${items.length} image${items.length === 1 ? "" : "s"}`;
+        zipBtn.disabled = running || !items.some((it) => it.result);
+        clearBtn.disabled = running;
+        items.forEach(paintItem);
+        paintOverall();
+      }
+
+      function add(files) {
+        const images = files.filter((f) => f && f.type && f.type.indexOf("image/") === 0);
+        if (images.length < 2 && !items.length) return; // one file stays a single-image edit
+        images.forEach((file) => {
+          const row = document.createElement("li");
+          row.className = "batch-item";
+          row.innerHTML =
+            '<div class="bi-top"><span class="bi-name"></span><span class="bi-state"></span></div>' +
+            '<div class="bi-bar"><span></span></div>' +
+            '<div class="bi-sizes"></div>';
+          row.querySelector(".bi-name").textContent = file.name || "image";
+          list.appendChild(row);
+          items.push({ file, row, state: "queued", progress: 0, result: null, error: "" });
+        });
+        root.hidden = items.length === 0;
+        summary.textContent = items.length
+          ? `${items.length} images queued. The settings above apply to all of them.`
+          : "";
+        paintAll();
+      }
+
+      async function run() {
+        if (running) return;
+        running = true;
+        paintAll();
+
+        for (const item of items) {
+          if (item.state === "done") continue;
+          item.state = "working";
+          item.progress = 0;
+          item.error = "";
+          paintItem(item);
+          paintOverall();
+          // Let the browser paint the "Processing…" state before the encode
+          // blocks the main thread.
+          await new Promise((resolve) => setTimeout(resolve, 0));
+          try {
+            item.result = await options.process(item.file, (p) => {
+              item.progress = clamp(p, 0, 1);
+              paintItem(item);
+              paintOverall();
+            });
+            item.state = "done";
+            item.progress = 1;
+          } catch (err) {
+            item.state = "error";
+            item.error = err && err.message ? err.message : "Failed";
+            item.result = null;
+          }
+          paintItem(item);
+          paintOverall();
+        }
+
+        running = false;
+        const done = items.filter((it) => it.result);
+        const failed = items.filter((it) => it.state === "error");
+        const before = done.reduce((sum, it) => sum + it.file.size, 0);
+        const after = done.reduce((sum, it) => sum + it.result.blob.size, 0);
+        summary.textContent = done.length
+          ? `${done.length} of ${items.length} processed · ${formatBytes(before)} → ${formatBytes(after)} (${percentSaved(before, after)}% smaller)` +
+            (failed.length ? ` · ${failed.length} failed` : "")
+          : "Nothing was processed.";
+        paintAll();
+      }
+
+      async function downloadZip() {
+        const done = items.filter((it) => it.result);
+        if (!done.length) return;
+        zipBtn.disabled = true;
+        const label = zipBtn.textContent;
+        zipBtn.textContent = "Zipping…";
+        try {
+          const names = uniqueFilenames(done.map((it) => it.result.name));
+          const entries = [];
+          for (let i = 0; i < done.length; i++) {
+            const buffer = await done[i].result.blob.arrayBuffer();
+            entries.push({ name: names[i], data: new Uint8Array(buffer) });
+          }
+          const blob = new Blob(buildZipParts(entries), { type: "application/zip" });
+          downloadBlob(blob, `photoshrink-${options.zipName || prefix}.zip`);
+        } finally {
+          zipBtn.textContent = label;
+          zipBtn.disabled = false;
+        }
+      }
+
+      function clear() {
+        items = [];
+        list.innerHTML = "";
+        root.hidden = true;
+        summary.textContent = "";
+        overall.style.width = "0%";
+        paintAll();
+      }
+
+      // Changing a setting invalidates every result: the queue goes back to
+      // "queued" rather than silently offering a ZIP built at the old quality.
+      function invalidate() {
+        if (running || !items.length) return;
+        let changed = false;
+        items.forEach((item) => {
+          if (item.state === "done") {
+            item.state = "queued";
+            item.progress = 0;
+            item.result = null;
+            changed = true;
+          }
+        });
+        if (changed) {
+          summary.textContent = "Settings changed — run the batch again.";
+          paintAll();
+        }
+      }
+
+      runBtn.addEventListener("click", run);
+      zipBtn.addEventListener("click", downloadZip);
+      clearBtn.addEventListener("click", clear);
+
+      return { add, invalidate, clear };
     }
 
     // Fallback: paste anywhere on a tool page routes to whichever tool panel
@@ -384,7 +988,7 @@ if (typeof document !== "undefined") {
     (function initTabs() {
       const tabIds = [
         "tab-resize", "tab-compress", "tab-crop", "tab-convert",
-        "tab-rotate", "tab-base64", "tab-favicon",
+        "tab-rotate", "tab-base64", "tab-favicon", "tab-exif",
       ];
       const tabs = tabIds.map((id) => $(id)).filter(Boolean);
       if (!tabs.length) return;
@@ -408,6 +1012,7 @@ if (typeof document !== "undefined") {
         "/rotate-image": "tab-rotate",
         "/image-to-base64": "tab-base64",
         "/favicon-generator": "tab-favicon",
+        "/exif-viewer": "tab-exif",
       };
       function tabIdForPath(pathname) {
         const clean = pathname.replace(/\.html$/, "").replace(/\/+$/, "") || "/";
@@ -493,15 +1098,22 @@ if (typeof document !== "undefined") {
         return unitPercent && unitPercent.getAttribute("aria-pressed") === "true" ? "percent" : "px";
       }
 
-      function targetDimensions() {
-        if (!current) return { width: 1, height: 1 };
-        if (unit() === "percent") return resizeByPercent(current.width, current.height, percentInput.value);
-        return resizeByDimension(current.width, current.height, widthInput.value, heightInput.value, lockCheckbox.checked, lastChanged);
+      // Split out so the batch can apply the same rule to each image's own
+      // dimensions: "50%" means half of each source, not half of the one in
+      // the preview.
+      function targetFor(sourceW, sourceH) {
+        if (unit() === "percent") return resizeByPercent(sourceW, sourceH, percentInput.value);
+        return resizeByDimension(sourceW, sourceH, widthInput.value, heightInput.value, lockCheckbox.checked, lastChanged);
       }
 
-      function outputFormat() {
+      function targetDimensions() {
+        if (!current) return { width: 1, height: 1 };
+        return targetFor(current.width, current.height);
+      }
+
+      function outputFormat(type) {
         const f = formatSelect.value;
-        return f === "keep" ? formatFromMimeType(current.type) : f;
+        return f === "keep" ? formatFromMimeType(type !== undefined ? type : current.type) : f;
       }
 
       const render = debounce(async () => {
@@ -528,23 +1140,56 @@ if (typeof document !== "undefined") {
         downloadBtn._name = `${stripExtension(current.name)}-${width}x${height}.${extensionForFormat(fmt)}`;
       }, 120);
 
-      wireDropzone("resize", async (file) => {
-        try {
-          hideError(errorEl);
+      const batch = createBatch("resize", {
+        zipName: "resized",
+        process: async (file, onProgress) => {
           const loaded = await loadImageFromFile(file);
-          current = loaded;
-          fname.textContent = `${loaded.name} · ${loaded.width}×${loaded.height}px · ${formatBytes(loaded.size)}`;
-          widthInput.value = loaded.width;
-          heightInput.value = loaded.height;
-          percentInput.value = 100;
-          lastChanged = "width";
-          workspace.hidden = false;
-          workspace.closest(".tool-panel").classList.add("has-image");
-          render();
-        } catch (err) {
-          showError(errorEl, err.message);
-        }
+          onProgress(0.25);
+          try {
+            const { width, height } = targetFor(loaded.width, loaded.height);
+            const off = document.createElement("canvas");
+            off.width = width;
+            off.height = height;
+            off.getContext("2d").drawImage(loaded.img, 0, 0, width, height);
+            onProgress(0.6);
+            const fmt = outputFormat(loaded.type);
+            const lossy = fmt === "jpeg" || fmt === "webp";
+            const blob = await canvasToBlob(off, mimeForFormat(fmt), lossy ? Number(qualityInput.value) / 100 : undefined);
+            if (!blob) throw new Error("This browser can't encode that format");
+            onProgress(1);
+            return { blob, name: batchOutputName(loaded.name, `${width}x${height}`, extensionForFormat(fmt)) };
+          } finally {
+            URL.revokeObjectURL(loaded.url);
+          }
+        },
       });
+
+      function rerender() {
+        render();
+        if (batch) batch.invalidate();
+      }
+
+      wireDropzone(
+        "resize",
+        async (file) => {
+          try {
+            hideError(errorEl);
+            const loaded = await loadImageFromFile(file);
+            current = loaded;
+            fname.textContent = `${loaded.name} · ${loaded.width}×${loaded.height}px · ${formatBytes(loaded.size)}`;
+            widthInput.value = loaded.width;
+            heightInput.value = loaded.height;
+            percentInput.value = 100;
+            lastChanged = "width";
+            workspace.hidden = false;
+            workspace.closest(".tool-panel").classList.add("has-image");
+            render();
+          } catch (err) {
+            showError(errorEl, err.message);
+          }
+        },
+        (files) => batch && batch.add(files)
+      );
 
       $("resize-change").addEventListener("click", () => $("resize-file").click());
 
@@ -553,19 +1198,19 @@ if (typeof document !== "undefined") {
         unitPercent.setAttribute("aria-pressed", String(next === "percent"));
         percentField.hidden = next !== "percent";
         dimensionField.hidden = next === "percent";
-        render();
+        rerender();
       }
       unitPx.addEventListener("click", () => setUnit("px"));
       unitPercent.addEventListener("click", () => setUnit("percent"));
 
-      widthInput.addEventListener("input", () => { lastChanged = "width"; render(); });
-      heightInput.addEventListener("input", () => { lastChanged = "height"; render(); });
-      percentInput.addEventListener("input", render);
-      lockCheckbox.addEventListener("change", render);
-      formatSelect.addEventListener("change", render);
+      widthInput.addEventListener("input", () => { lastChanged = "width"; rerender(); });
+      heightInput.addEventListener("input", () => { lastChanged = "height"; rerender(); });
+      percentInput.addEventListener("input", rerender);
+      lockCheckbox.addEventListener("change", rerender);
+      formatSelect.addEventListener("change", rerender);
       qualityInput.addEventListener("input", () => {
         qualityValue.textContent = qualityInput.value + "%";
-        render();
+        rerender();
       });
 
       downloadBtn.addEventListener("click", () => {
@@ -619,26 +1264,65 @@ if (typeof document !== "undefined") {
         downloadBtn._name = `${stripExtension(current.name)}-compressed.${extensionForFormat(fmt)}`;
       }, 120);
 
-      wireDropzone("compress", async (file) => {
-        try {
-          hideError(errorEl);
+      // The batch reuses whatever the sliders above are set to — the first
+      // dropped image stays in the preview precisely so those settings can be
+      // judged on a real photo before being applied to the whole folder.
+      const batch = createBatch("compress", {
+        zipName: "compressed",
+        process: async (file, onProgress) => {
           const loaded = await loadImageFromFile(file);
-          current = loaded;
-          fname.textContent = `${loaded.name} · ${loaded.width}×${loaded.height}px`;
-          formatSelect.value = loaded.type === "image/png" ? "webp" : "jpeg";
-          workspace.hidden = false;
-          workspace.closest(".tool-panel").classList.add("has-image");
-          render();
-        } catch (err) {
-          showError(errorEl, err.message);
-        }
+          onProgress(0.25);
+          try {
+            const fmt = formatSelect.value;
+            const off = document.createElement("canvas");
+            off.width = loaded.width;
+            off.height = loaded.height;
+            const octx = off.getContext("2d");
+            if (fmt === "jpeg") {
+              octx.fillStyle = "#ffffff";
+              octx.fillRect(0, 0, off.width, off.height);
+            }
+            octx.drawImage(loaded.img, 0, 0);
+            onProgress(0.6);
+            const lossy = fmt === "jpeg" || fmt === "webp";
+            const blob = await canvasToBlob(off, mimeForFormat(fmt), lossy ? Number(qualityInput.value) / 100 : undefined);
+            if (!blob) throw new Error("This browser can't encode that format");
+            onProgress(1);
+            return { blob, name: batchOutputName(loaded.name, "compressed", extensionForFormat(fmt)) };
+          } finally {
+            URL.revokeObjectURL(loaded.url);
+          }
+        },
       });
 
+      wireDropzone(
+        "compress",
+        async (file) => {
+          try {
+            hideError(errorEl);
+            const loaded = await loadImageFromFile(file);
+            current = loaded;
+            fname.textContent = `${loaded.name} · ${loaded.width}×${loaded.height}px`;
+            formatSelect.value = loaded.type === "image/png" ? "webp" : "jpeg";
+            workspace.hidden = false;
+            workspace.closest(".tool-panel").classList.add("has-image");
+            render();
+          } catch (err) {
+            showError(errorEl, err.message);
+          }
+        },
+        (files) => batch && batch.add(files)
+      );
+
       $("compress-change").addEventListener("click", () => $("compress-file").click());
-      formatSelect.addEventListener("change", render);
+      formatSelect.addEventListener("change", () => {
+        render();
+        if (batch) batch.invalidate();
+      });
       qualityInput.addEventListener("input", () => {
         qualityValue.textContent = qualityInput.value + "%";
         render();
+        if (batch) batch.invalidate();
       });
       downloadBtn.addEventListener("click", () => {
         if (downloadBtn._blob) downloadBlob(downloadBtn._blob, downloadBtn._name);
@@ -832,26 +1516,62 @@ if (typeof document !== "undefined") {
         downloadBtn._name = `${stripExtension(current.name)}.${extensionForFormat(fmt)}`;
       }, 120);
 
-      wireDropzone("convert", async (file) => {
-        try {
-          hideError(errorEl);
+      const batch = createBatch("convert", {
+        zipName: "converted",
+        process: async (file, onProgress) => {
           const loaded = await loadImageFromFile(file);
-          current = loaded;
-          fname.textContent = `${loaded.name} · ${loaded.width}×${loaded.height}px · ${formatBytes(loaded.size)}`;
-          formatSelect.value = current.type === "image/jpeg" ? "png" : "jpeg";
-          workspace.hidden = false;
-          workspace.closest(".tool-panel").classList.add("has-image");
-          render();
-        } catch (err) {
-          showError(errorEl, err.message);
-        }
+          onProgress(0.25);
+          try {
+            const fmt = formatSelect.value;
+            const off = document.createElement("canvas");
+            off.width = loaded.width;
+            off.height = loaded.height;
+            const octx = off.getContext("2d");
+            if (fmt === "jpeg") {
+              octx.fillStyle = "#ffffff";
+              octx.fillRect(0, 0, off.width, off.height);
+            }
+            octx.drawImage(loaded.img, 0, 0);
+            onProgress(0.6);
+            const lossy = fmt === "jpeg" || fmt === "webp";
+            const blob = await canvasToBlob(off, mimeForFormat(fmt), lossy ? Number(qualityInput.value) / 100 : undefined);
+            if (!blob) throw new Error("This browser can't encode that format");
+            onProgress(1);
+            return { blob, name: batchOutputName(loaded.name, "", extensionForFormat(fmt)) };
+          } finally {
+            URL.revokeObjectURL(loaded.url);
+          }
+        },
       });
 
+      wireDropzone(
+        "convert",
+        async (file) => {
+          try {
+            hideError(errorEl);
+            const loaded = await loadImageFromFile(file);
+            current = loaded;
+            fname.textContent = `${loaded.name} · ${loaded.width}×${loaded.height}px · ${formatBytes(loaded.size)}`;
+            formatSelect.value = current.type === "image/jpeg" ? "png" : "jpeg";
+            workspace.hidden = false;
+            workspace.closest(".tool-panel").classList.add("has-image");
+            render();
+          } catch (err) {
+            showError(errorEl, err.message);
+          }
+        },
+        (files) => batch && batch.add(files)
+      );
+
       $("convert-change").addEventListener("click", () => $("convert-file").click());
-      formatSelect.addEventListener("change", render);
+      formatSelect.addEventListener("change", () => {
+        render();
+        if (batch) batch.invalidate();
+      });
       qualityInput.addEventListener("input", () => {
         qualityValue.textContent = qualityInput.value + "%";
         render();
+        if (batch) batch.invalidate();
       });
       downloadBtn.addEventListener("click", () => {
         if (downloadBtn._blob) downloadBlob(downloadBtn._blob, downloadBtn._name);
@@ -1043,6 +1763,150 @@ if (typeof document !== "undefined") {
       });
 
       $("favicon-change").addEventListener("click", () => $("favicon-file").click());
+    })();
+
+    /* ---- EXIF viewer & stripper ---- */
+    (function exifTool() {
+      const workspace = $("exif-workspace");
+      if (!workspace) return;
+
+      const fname = $("exif-fname");
+      const errorEl = $("exif-error");
+      const tableBody = $("exif-table-body");
+      const emptyEl = $("exif-empty");
+      const gpsCard = $("exif-gps");
+      const gpsText = $("exif-gps-text");
+      const gpsLink = $("exif-gps-link");
+      const downloadBtn = $("exif-download");
+      const meta = $("exif-meta");
+      const preview = $("exif-preview");
+
+      let current = null; // { file, bytes, stripped }
+
+      // Presentation only — the parser keeps raw numbers so the pure helpers
+      // stay testable without a locale or a unit convention baked in.
+      function pretty(key, value) {
+        if (key === "Orientation") return exifOrientationLabel(value);
+        if (key === "ExposureTime" && value > 0) {
+          return value >= 1 ? `${value}s` : `1/${Math.round(1 / value)}s`;
+        }
+        if (key === "FNumber") return `f/${Number(value).toFixed(1)}`;
+        if (key === "FocalLength") return `${Math.round(Number(value))}mm`;
+        if (key === "FocalLengthIn35mm") return `${value}mm (35mm equivalent)`;
+        if (key === "GPSAltitude") return `${Math.round(Number(value))}m`;
+        if (Array.isArray(value)) return value.join(", ");
+        return String(value);
+      }
+
+      const LABELS = {
+        Make: "Camera make",
+        Model: "Camera model",
+        LensMake: "Lens make",
+        LensModel: "Lens",
+        DateTimeOriginal: "Date taken",
+        DateTime: "Date modified",
+        DateTimeDigitized: "Date digitised",
+        Software: "Software",
+        Artist: "Artist",
+        Copyright: "Copyright",
+        ExposureTime: "Shutter speed",
+        FNumber: "Aperture",
+        ISO: "ISO",
+        FocalLength: "Focal length",
+        FocalLengthIn35mm: "Focal length (35mm)",
+        Flash: "Flash",
+        Orientation: "Orientation",
+        PixelXDimension: "Width",
+        PixelYDimension: "Height",
+      };
+
+      function renderTags(tags) {
+        tableBody.innerHTML = "";
+        const keys = tags ? Object.keys(tags).filter((k) => k.indexOf("GPS") !== 0) : [];
+        keys.forEach((key) => {
+          const tr = document.createElement("tr");
+          const th = document.createElement("th");
+          th.scope = "row";
+          th.textContent = LABELS[key] || key;
+          const td = document.createElement("td");
+          td.textContent = pretty(key, tags[key]);
+          tr.appendChild(th);
+          tr.appendChild(td);
+          tableBody.appendChild(tr);
+        });
+
+        const lat = tags && gpsToDecimal(tags.GPSLatitude, tags.GPSLatitudeRef);
+        const lon = tags && gpsToDecimal(tags.GPSLongitude, tags.GPSLongitudeRef);
+        const hasGps = lat !== null && lat !== undefined && lon !== null && lon !== undefined;
+        gpsCard.hidden = !hasGps;
+        if (hasGps) {
+          gpsText.textContent = `${lat}, ${lon}`;
+          gpsLink.href = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
+        }
+        emptyEl.hidden = keys.length > 0 || hasGps;
+      }
+
+      async function load(file) {
+        hideError(errorEl);
+        const buffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        const result = stripMetadata(bytes, file.type);
+        if (!result) {
+          throw new Error("Only JPEG and PNG files can be read and stripped losslessly here.");
+        }
+        if (current && current.previewUrl) URL.revokeObjectURL(current.previewUrl);
+        const previewUrl = URL.createObjectURL(file);
+        current = { file, bytes, stripped: result, previewUrl };
+
+        fname.textContent = `${file.name} · ${formatBytes(file.size)}`;
+        preview.src = previewUrl;
+        renderTags(parseExif(bytes));
+
+        const dropped = result.bytes.length !== bytes.length;
+        setMeta(meta, [
+          ["Metadata blocks", String(result.removed.length)],
+          ["Metadata size", formatBytes(bytes.length - result.bytes.length)],
+          ["Clean file", formatBytes(result.bytes.length), dropped ? "save-tag" : ""],
+        ]);
+        downloadBtn.disabled = false;
+        workspace.hidden = false;
+        workspace.closest(".tool-panel").classList.add("has-image");
+      }
+
+      const batch = createBatch("exif", {
+        zipName: "stripped",
+        process: async (file, onProgress) => {
+          const buffer = await file.arrayBuffer();
+          onProgress(0.4);
+          const bytes = new Uint8Array(buffer);
+          const result = stripMetadata(bytes, file.type);
+          if (!result) throw new Error("Not a JPEG or PNG");
+          onProgress(1);
+          return {
+            blob: new Blob([result.bytes], { type: file.type || "application/octet-stream" }),
+            name: file.name || "image",
+          };
+        },
+      });
+
+      wireDropzone(
+        "exif",
+        async (file) => {
+          try {
+            await load(file);
+          } catch (err) {
+            showError(errorEl, err.message);
+          }
+        },
+        (files) => batch && batch.add(files)
+      );
+
+      $("exif-change").addEventListener("click", () => $("exif-file").click());
+      downloadBtn.addEventListener("click", () => {
+        if (!current) return;
+        const blob = new Blob([current.stripped.bytes], { type: current.file.type || "image/jpeg" });
+        downloadBlob(blob, batchOutputName(current.file.name, "clean", extensionForFormat(formatFromMimeType(current.file.type))));
+      });
     })();
   })();
 }
