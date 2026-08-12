@@ -50,6 +50,41 @@
   </div>
 </header>
 
+<!-- nav:start -->
+<nav class="toolbar" aria-label="Tools">
+  <details class="tb-menu">
+    <summary class="tb-trigger" aria-label="All 8 tools">
+      <span class="tb-glyph" aria-hidden="true">&#9636;</span>
+      <span class="tb-label">All 8<span class="tb-label-long"> tools</span></span>
+    </summary>
+    <div class="tb-sheet is-flat">
+      <ul>
+        <li><a href="/resize-image">Resize Image</a></li>
+        <li><a href="/compress-image">Compress Image</a></li>
+        <li><a href="/crop-image">Crop Image</a></li>
+        <li><a href="/convert-image">Convert Image Format</a></li>
+        <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
+        <li><a href="/image-to-base64">Image to Base64</a></li>
+        <li><a href="/favicon-generator">Favicon Generator</a></li>
+        <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
+      </ul>
+      <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
+    </div>
+  </details>
+  <div class="tb-scrim"></div>
+  <ul class="tb-rail">
+    <li><a href="/resize-image">Resize</a></li>
+    <li><a href="/compress-image">Compress</a></li>
+    <li><a href="/crop-image">Crop</a></li>
+    <li><a href="/convert-image">Convert</a></li>
+    <li><a href="/rotate-image">Rotate</a></li>
+    <li><a href="/image-to-base64">Base64</a></li>
+    <li><a href="/favicon-generator">Favicon</a></li>
+    <li><a href="/exif-viewer">Metadata</a></li>
+  </ul>
+</nav>
+<!-- nav:end -->
+
 <main id="main">
   <div class="hero">
     <span class="eyebrow">100% client-side · nothing uploaded</span>
@@ -91,19 +126,8 @@
     </div>
   </div>
 
-  <div role="tablist" class="tabbar" aria-label="Image tool">
-    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="true" aria-current="page" class="tab-btn active">Resize</a>
-    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="false" class="tab-btn" tabindex="-1">Compress</a>
-    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="false" class="tab-btn" tabindex="-1">Crop</a>
-    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="false" class="tab-btn" tabindex="-1">Convert</a>
-    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn" tabindex="-1">Rotate &amp; Flip</a>
-    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn" tabindex="-1">To Base64</a>
-    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn" tabindex="-1">Favicon</a>
-    <a role="tab" id="tab-exif" href="/exif-viewer" aria-controls="panel-exif" aria-selected="false" class="tab-btn" tabindex="-1">Metadata</a>
-  </div>
-
   <!-- ===================== RESIZE ===================== -->
-  <section role="tabpanel" id="panel-resize" aria-labelledby="tab-resize" class="tool-panel tab-panel active" data-prefix="resize">
+  <section id="panel-resize" class="tool-panel tab-panel active" data-prefix="resize">
     <div class="dropzone" id="resize-drop">
       <input type="file" id="resize-file" accept="image/*" multiple aria-label="Choose an image to resize">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -183,13 +207,28 @@
   </section>
 
   <!-- ===================== COMPRESS ===================== -->
-  <section role="tabpanel" id="panel-compress" aria-labelledby="tab-compress" class="tool-panel tab-panel" data-prefix="compress" hidden>
+  <section id="panel-compress" class="tool-panel tab-panel" data-prefix="compress" hidden>
     <div class="dropzone" id="compress-drop">
       <input type="file" id="compress-file" accept="image/*" multiple aria-label="Choose an image to compress">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
       <p class="dz-title">Drop images to compress</p>
       <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to process a whole batch</p>
     </div>
+    <!-- sizechips:start -->
+    <nav class="size-chips" aria-label="Target file size">
+      <span class="size-chips-label" id="size-chips-label">Target size</span>
+      <ul aria-labelledby="size-chips-label">
+        <li><a href="/compress-image" class="chip" data-target="">Any size</a></li>
+        <li><a href="/compress-image-to-100kb" class="chip" data-target="102400">100 KB</a></li>
+        <li><a href="/compress-image-to-200kb" class="chip" data-target="204800">200 KB</a></li>
+        <li><a href="/compress-image-to-500kb" class="chip" data-target="512000">500 KB</a></li>
+        <li><a href="/compress-image-to-1mb" class="chip" data-target="1048576">1 MB</a></li>
+        <li><a href="/compress-image-for-email" class="chip" data-target="5242880">Email 5 MB</a></li>
+        <li><a href="/compress-image-for-discord" class="chip" data-target="8388608">Discord 8 MB</a></li>
+      </ul>
+    </nav>
+    <!-- sizechips:end -->
+
     <div class="workspace" id="compress-workspace" hidden>
       <div class="panel">
         <div class="file-name-row"><span class="fname" id="compress-fname"></span><button class="ghost change-file-btn" type="button" id="compress-change">Change image</button></div>
@@ -244,12 +283,6 @@
               </select>
               <button type="button" class="ghost" id="compress-target-cancel" hidden>Cancel</button>
             </div>
-            <div class="target-presets" id="compress-target-presets" role="group" aria-label="Common budgets">
-              <button type="button" class="chip" data-preset="web">Web 200 KB</button>
-              <button type="button" class="chip" data-preset="1mb">1 MB</button>
-              <button type="button" class="chip" data-preset="email">Email 5 MB</button>
-              <button type="button" class="chip" data-preset="discord">Discord 8 MB</button>
-            </div>
             <div class="inline-check">
               <input type="checkbox" id="compress-target-scale" checked>
               <label for="compress-target-scale">Shrink the dimensions if quality alone cannot reach it</label>
@@ -283,7 +316,7 @@
   </section>
 
   <!-- ===================== CROP ===================== -->
-  <section role="tabpanel" id="panel-crop" aria-labelledby="tab-crop" class="tool-panel tab-panel" data-prefix="crop" hidden>
+  <section id="panel-crop" class="tool-panel tab-panel" data-prefix="crop" hidden>
     <div class="dropzone" id="crop-drop">
       <input type="file" id="crop-file" accept="image/*" aria-label="Choose an image to crop">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -340,7 +373,7 @@
   </section>
 
   <!-- ===================== CONVERT ===================== -->
-  <section role="tabpanel" id="panel-convert" aria-labelledby="tab-convert" class="tool-panel tab-panel" data-prefix="convert" hidden>
+  <section id="panel-convert" class="tool-panel tab-panel" data-prefix="convert" hidden>
     <div class="dropzone" id="convert-drop">
       <input type="file" id="convert-file" accept="image/*" multiple aria-label="Choose an image to convert">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -394,7 +427,7 @@
   </section>
 
   <!-- ===================== ROTATE & FLIP ===================== -->
-  <section role="tabpanel" id="panel-rotate" aria-labelledby="tab-rotate" class="tool-panel tab-panel" data-prefix="rotate" hidden>
+  <section id="panel-rotate" class="tool-panel tab-panel" data-prefix="rotate" hidden>
     <div class="dropzone" id="rotate-drop">
       <input type="file" id="rotate-file" accept="image/*" aria-label="Choose an image to rotate">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -433,7 +466,7 @@
   </section>
 
   <!-- ===================== IMAGE TO BASE64 ===================== -->
-  <section role="tabpanel" id="panel-base64" aria-labelledby="tab-base64" class="tool-panel tab-panel" data-prefix="base64" hidden>
+  <section id="panel-base64" class="tool-panel tab-panel" data-prefix="base64" hidden>
     <div class="dropzone" id="base64-drop">
       <input type="file" id="base64-file" accept="image/*" aria-label="Choose an image to convert to Base64">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -478,7 +511,7 @@
   </section>
 
   <!-- ===================== FAVICON GENERATOR ===================== -->
-  <section role="tabpanel" id="panel-favicon" aria-labelledby="tab-favicon" class="tool-panel tab-panel" data-prefix="favicon" hidden>
+  <section id="panel-favicon" class="tool-panel tab-panel" data-prefix="favicon" hidden>
     <div class="dropzone" id="favicon-drop">
       <input type="file" id="favicon-file" accept="image/*" aria-label="Choose an image to generate favicons from">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -503,7 +536,7 @@
     </div>
   </section>
 
-  <section role="tabpanel" id="panel-exif" aria-labelledby="tab-exif" class="tool-panel tab-panel" data-prefix="exif" hidden>
+  <section id="panel-exif" class="tool-panel tab-panel" data-prefix="exif" hidden>
     <div class="dropzone" id="exif-drop">
       <input type="file" id="exif-file" accept="image/jpeg,image/png" multiple aria-label="Choose an image to inspect and strip">
       <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>

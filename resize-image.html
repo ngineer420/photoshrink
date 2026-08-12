@@ -50,6 +50,41 @@
   </div>
 </header>
 
+<!-- nav:start -->
+<nav class="toolbar" aria-label="Tools">
+  <details class="tb-menu">
+    <summary class="tb-trigger" aria-label="All 8 tools">
+      <span class="tb-glyph" aria-hidden="true">&#9636;</span>
+      <span class="tb-label">All 8<span class="tb-label-long"> tools</span></span>
+    </summary>
+    <div class="tb-sheet is-flat">
+      <ul>
+        <li><a href="/resize-image" aria-current="page">Resize Image</a></li>
+        <li><a href="/compress-image">Compress Image</a></li>
+        <li><a href="/crop-image">Crop Image</a></li>
+        <li><a href="/convert-image">Convert Image Format</a></li>
+        <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
+        <li><a href="/image-to-base64">Image to Base64</a></li>
+        <li><a href="/favicon-generator">Favicon Generator</a></li>
+        <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
+      </ul>
+      <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
+    </div>
+  </details>
+  <div class="tb-scrim"></div>
+  <ul class="tb-rail">
+    <li><a href="/resize-image" aria-current="page">Resize</a></li>
+    <li><a href="/compress-image">Compress</a></li>
+    <li><a href="/crop-image">Crop</a></li>
+    <li><a href="/convert-image">Convert</a></li>
+    <li><a href="/rotate-image">Rotate</a></li>
+    <li><a href="/image-to-base64">Base64</a></li>
+    <li><a href="/favicon-generator">Favicon</a></li>
+    <li><a href="/exif-viewer">Metadata</a></li>
+  </ul>
+</nav>
+<!-- nav:end -->
+
 <main id="main">
   <div class="hero">
     <span class="eyebrow">100% client-side · nothing uploaded</span>
@@ -59,17 +94,6 @@
       <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
       Your images never leave your browser
     </div>
-  </div>
-
-  <div role="tablist" class="tabbar" aria-label="Image tool">
-    <a role="tab" id="tab-resize" href="/resize-image" aria-controls="panel-resize" aria-selected="true" aria-current="page" class="tab-btn active">Resize</a>
-    <a role="tab" id="tab-compress" href="/compress-image" aria-controls="panel-compress" aria-selected="false" class="tab-btn">Compress</a>
-    <a role="tab" id="tab-crop" href="/crop-image" aria-controls="panel-crop" aria-selected="false" class="tab-btn">Crop</a>
-    <a role="tab" id="tab-convert" href="/convert-image" aria-controls="panel-convert" aria-selected="false" class="tab-btn">Convert</a>
-    <a role="tab" id="tab-rotate" href="/rotate-image" aria-controls="panel-rotate" aria-selected="false" class="tab-btn">Rotate &amp; Flip</a>
-    <a role="tab" id="tab-base64" href="/image-to-base64" aria-controls="panel-base64" aria-selected="false" class="tab-btn">To Base64</a>
-    <a role="tab" id="tab-favicon" href="/favicon-generator" aria-controls="panel-favicon" aria-selected="false" class="tab-btn">Favicon</a>
-    <a role="tab" id="tab-exif" href="/exif-viewer" aria-controls="panel-exif" aria-selected="false" class="tab-btn">Metadata</a>
   </div>
 
   <section id="panel-resize" class="tool-panel tab-panel active" data-prefix="resize">

@@ -1294,84 +1294,145 @@ if (typeof document !== "undefined") {
       });
     })();
 
-    /* ---- tool menu / homepage instant-switch tabs ---- */
-    (function initTabs() {
-      const tabIds = [
-        "tab-resize", "tab-compress", "tab-crop", "tab-convert",
-        "tab-rotate", "tab-base64", "tab-favicon", "tab-exif",
-      ];
-      const tabs = tabIds.map((id) => $(id)).filter(Boolean);
-      if (!tabs.length) return;
+    /* ================================================================== *
+     * toolbar v1 — the portfolio navigation pattern.                      *
+     * Spec: github.com/ngineer420/ngineer420.github.io/issues/13          *
+     *                                                                     *
+     * Copy this block verbatim into any site in the portfolio. It is pure *
+     * enhancement: with JS off, <details>/<summary> still discloses the   *
+     * sheet, the rail is still a native scroll container of real links,   *
+     * the edge fades are still CSS and the scrim is still CSS. Only the   *
+     * active-chip centring, Escape and click-outside are lost.            *
+     * ================================================================== */
+    (function toolbar() {
+      const bar = document.querySelector(".toolbar");
+      if (!bar) return;
+      const rail = bar.querySelector(".tb-rail");
+      const menu = bar.querySelector("details.tb-menu");
+
+      if (rail) {
+        // js-on hands the right-hand fade over to measurement. Until then the
+        // CSS keeps it on, so a JS-disabled visitor never gets a chip clipped
+        // mid-word with nothing to say there is more of the row.
+        rail.classList.add("js-on");
+        const fades = () => {
+          const max = rail.scrollWidth - rail.clientWidth;
+          rail.classList.toggle("can-l", rail.scrollLeft > 1);
+          rail.classList.toggle("can-r", rail.scrollLeft < max - 1);
+        };
+        // Assigning scrollLeft, never scrollIntoView: that also scrolls every
+        // ancestor and the document, which on a phone drops the visitor below
+        // the header on arrival.
+        const current = rail.querySelector("[aria-current]");
+        if (current) {
+          rail.scrollLeft = Math.max(
+            0,
+            current.offsetLeft - (rail.clientWidth - current.offsetWidth) / 2
+          );
+        }
+        rail.addEventListener("scroll", fades, { passive: true });
+        window.addEventListener("resize", fades);
+        fades();
+      }
+
+      if (menu) {
+        // A disclosure, not a modal: focus is deliberately not trapped, Tab
+        // walks the links and straight out the other side.
+        window.addEventListener("keydown", (e) => {
+          if (e.key !== "Escape" || !menu.open) return;
+          menu.open = false;
+          const summary = menu.querySelector("summary");
+          if (summary) summary.focus();
+        });
+        document.addEventListener("click", (e) => {
+          if (menu.open && !menu.contains(e.target)) menu.open = false;
+        });
+      }
+    })();
+
+    /* ---- homepage instant tool switch ----
+       The toolbar's links are real navigation on every page. The homepage is
+       the one page that mounts all eight panels, so there a plain left-click
+       swaps the panel in place and pushes the tool's clean URL instead. Both
+       the rail and the sheet are wired, so the two routes to a tool behave
+       identically. This is no longer a tablist: the roving tabindex that came
+       with that pattern was shipping seven of the eight links with
+       tabindex="-1", i.e. out of tab order entirely. */
+    (function initToolPanels() {
+      const bar = document.querySelector(".toolbar");
+      if (!bar) return;
+
+      const PANEL_FOR = {
+        "/resize-image": "panel-resize",
+        "/compress-image": "panel-compress",
+        "/crop-image": "panel-crop",
+        "/convert-image": "panel-convert",
+        "/rotate-image": "panel-rotate",
+        "/image-to-base64": "panel-base64",
+        "/favicon-generator": "panel-favicon",
+        "/exif-viewer": "panel-exif",
+      };
+      const DEFAULT_HREF = "/resize-image";
 
       const panels = {};
-      let allPanels = true;
-      tabs.forEach((t) => {
-        const p = $(t.getAttribute("aria-controls"));
-        panels[t.id] = p;
-        if (!p) allPanels = false;
+      let complete = true;
+      Object.keys(PANEL_FOR).forEach((href) => {
+        const el = $(PANEL_FOR[href]);
+        panels[PANEL_FOR[href]] = el;
+        if (!el) complete = false;
       });
-      // Standalone tool pages only mount one panel — their nav links are
-      // plain navigation, so leave them alone.
-      if (!allPanels) return;
+      // A standalone tool page mounts one panel — its links are plain
+      // navigation and there is nothing here to do.
+      if (!complete) return;
 
-      const pathToId = {
-        "/resize-image": "tab-resize",
-        "/compress-image": "tab-compress",
-        "/crop-image": "tab-crop",
-        "/convert-image": "tab-convert",
-        "/rotate-image": "tab-rotate",
-        "/image-to-base64": "tab-base64",
-        "/favicon-generator": "tab-favicon",
-        "/exif-viewer": "tab-exif",
-      };
-      function tabIdForPath(pathname) {
-        const clean = pathname.replace(/\.html$/, "").replace(/\/+$/, "") || "/";
-        return pathToId[clean] || "tab-resize";
+      function cleanPath(pathname) {
+        const p = pathname.replace(/\/index\.html$/, "/").replace(/\.html$/, "").replace(/\/+$/, "");
+        return p || "/";
+      }
+      function panelForPath(pathname) {
+        const clean = cleanPath(pathname);
+        if (PANEL_FOR[clean]) return PANEL_FOR[clean];
+        // A target-size page is the compressor with a budget baked in, so a
+        // history entry for one of them is still the compress panel.
+        if (clean.indexOf("/compress-image") === 0) return "panel-compress";
+        return null;
       }
 
-      function activate(tab, opts) {
-        const options = opts || {};
-        tabs.forEach((t) => {
-          const active = t === tab;
-          t.setAttribute("aria-selected", String(active));
-          t.tabIndex = active ? 0 : -1;
-          t.classList.toggle("active", active);
-          if (active) t.setAttribute("aria-current", "page");
-          else t.removeAttribute("aria-current");
-          panels[t.id].hidden = !active;
-          panels[t.id].classList.toggle("active", active);
+      const links = Array.from(bar.querySelectorAll(".tb-rail a[href], .tb-sheet a[href]"));
+
+      function activate(href, push) {
+        const id = panelForPath(href) || panelForPath(DEFAULT_HREF);
+        Object.keys(panels).forEach((pid) => {
+          const on = pid === id;
+          panels[pid].hidden = !on;
+          panels[pid].classList.toggle("active", on);
         });
-        if (options.focus) tab.focus();
-        if (options.push) history.pushState({ tool: tab.id }, "", tab.getAttribute("href"));
+        // "page" only for a link that really points here; the tool that owns a
+        // target-size variant gets "true" — the current item, not the page.
+        const here = cleanPath(href);
+        links.forEach((a) => {
+          const to = a.getAttribute("href");
+          if (cleanPath(to) === here) a.setAttribute("aria-current", "page");
+          else if (panelForPath(to) === id) a.setAttribute("aria-current", "true");
+          else a.removeAttribute("aria-current");
+        });
+        if (push) history.pushState({ panel: id }, "", href);
       }
 
-      tabs.forEach((tab, i) => {
-        tab.addEventListener("click", (e) => {
-          if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-          e.preventDefault();
-          activate(tab, { push: true, focus: true });
-        });
-        tab.addEventListener("keydown", (e) => {
-          let target;
-          if (e.key === "ArrowRight") target = tabs[(i + 1) % tabs.length];
-          else if (e.key === "ArrowLeft") target = tabs[(i - 1 + tabs.length) % tabs.length];
-          else if (e.key === "Home") target = tabs[0];
-          else if (e.key === "End") target = tabs[tabs.length - 1];
-          if (target) {
-            e.preventDefault();
-            activate(target, { push: true, focus: true });
-          }
-        });
+      bar.addEventListener("click", (e) => {
+        const link = e.target.closest("a[href]");
+        if (!link || !bar.contains(link) || e.defaultPrevented) return;
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        const href = link.getAttribute("href");
+        if (!panelForPath(href)) return;
+        e.preventDefault();
+        activate(href, true);
+        const menu = bar.querySelector("details.tb-menu");
+        if (menu) menu.open = false;
       });
 
-      window.addEventListener("popstate", (e) => {
-        const id = (e.state && e.state.tool) || tabIdForPath(location.pathname);
-        const tab = $(id);
-        if (tab) activate(tab, { push: false, focus: false });
-      });
-
-      const initial = $(tabIdForPath(location.pathname)) || tabs[0];
-      activate(initial, { push: false, focus: false });
+      window.addEventListener("popstate", () => activate(location.pathname, false));
+      activate(location.pathname, false);
     })();
 
     const yearEl = $("year");
@@ -1552,7 +1613,7 @@ if (typeof document !== "undefined") {
       const targetScale = $("compress-target-scale");
       const targetStatus = $("compress-target-status");
       const targetCancel = $("compress-target-cancel");
-      const targetPresets = $("compress-target-presets");
+      const sizeChips = document.querySelector(".size-chips");
 
       const compare = createCompare("compress");
 
@@ -1834,11 +1895,8 @@ if (typeof document !== "undefined") {
             if (batch) batch.invalidate();
           });
         });
-        targetPresets.addEventListener("click", (e) => {
-          const btn = e.target.closest("[data-preset]");
-          if (!btn) return;
-          const bytes = budgetFromPreset(btn.getAttribute("data-preset"));
-          if (!bytes) return;
+        // A budget in bytes back into the two fields that express it.
+        function showBudget(bytes) {
           if (bytes >= 1024 * 1024 && bytes % (1024 * 1024) === 0) {
             targetUnit.value = "mb";
             targetAmount.value = String(bytes / (1024 * 1024));
@@ -1846,12 +1904,35 @@ if (typeof document !== "undefined") {
             targetUnit.value = "kb";
             targetAmount.value = String(Math.round(bytes / 1024));
           }
-          Array.from(targetPresets.querySelectorAll("[data-preset]")).forEach((b) =>
-            b.classList.toggle("is-on", b === btn)
-          );
-          render();
-          if (batch) batch.invalidate();
-        });
+        }
+
+        /* The target-size landing pages are siblings of this control, not peers
+           of the eight tools, so they live here as real links. A plain click
+           switches the budget in place — reloading would throw away the image
+           already loaded — and replaceState keeps the URL and the announced
+           identity in step without stacking a history entry per chip. With JS
+           off the link simply navigates and the destination seeds itself from
+           its own data-compress-target. */
+        if (sizeChips) {
+          sizeChips.addEventListener("click", (e) => {
+            const link = e.target.closest("a[data-target]");
+            if (!link || e.defaultPrevented) return;
+            if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            e.preventDefault();
+            const bytes = parseBudget(link.getAttribute("data-target"), "b");
+            targetOn.checked = Boolean(bytes);
+            if (bytes) showBudget(bytes);
+            Array.from(sizeChips.querySelectorAll("a[data-target]")).forEach((el) => {
+              if (el === link) el.setAttribute("aria-current", "page");
+              else el.removeAttribute("aria-current");
+            });
+            history.replaceState(history.state, "", link.getAttribute("href"));
+            targetStatus.classList.remove("is-miss");
+            syncTargetUI();
+            render();
+            if (batch) batch.invalidate();
+          });
+        }
         // Bumping the token is the whole cancellation mechanism: the run in
         // flight checks it before every encode and abandons itself.
         targetCancel.addEventListener("click", () => {
@@ -1868,13 +1949,7 @@ if (typeof document !== "undefined") {
           const bytes = budgetFromPreset(seeded) || parseBudget(seeded, "b");
           if (bytes) {
             targetOn.checked = true;
-            if (bytes >= 1024 * 1024 && bytes % (1024 * 1024) === 0) {
-              targetUnit.value = "mb";
-              targetAmount.value = String(bytes / (1024 * 1024));
-            } else {
-              targetUnit.value = "kb";
-              targetAmount.value = String(Math.round(bytes / 1024));
-            }
+            showBudget(bytes);
           }
         }
         syncTargetUI();
