@@ -194,7 +194,25 @@
       <div class="panel">
         <div class="file-name-row"><span class="fname" id="compress-fname"></span><button class="ghost change-file-btn" type="button" id="compress-change">Change image</button></div>
         <h2>Preview</h2>
-        <div class="preview-stage"><canvas id="compress-canvas"></canvas></div>
+        <div class="preview-stage compare-stage" id="compress-stage">
+          <div class="compare" id="compress-compare" data-zoom="fit">
+            <div class="compare-frame" id="compress-frame">
+              <img class="compare-img compare-before" id="compress-before" alt="The original image, before compression">
+              <img class="compare-img compare-after" id="compress-after" alt="The compressed result">
+              <div class="compare-divider" id="compress-divider" aria-hidden="true"></div>
+              <div class="compare-handle" id="compress-handle" role="slider" tabindex="0"
+                   aria-label="Reveal more of the original or the compressed image"
+                   aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="Half original, half compressed"></div>
+              <span class="compare-tag compare-tag-l">Original</span>
+              <span class="compare-tag compare-tag-r">Compressed</span>
+            </div>
+          </div>
+          <canvas id="compress-canvas" hidden></canvas>
+        </div>
+        <div class="compare-controls">
+          <button type="button" class="ghost" id="compress-zoom" aria-pressed="false">Zoom to 1:1</button>
+          <span class="compare-hint" id="compress-zoom-hint">Drag the divider. Arrow keys work too.</span>
+        </div>
         <div class="meta-row" id="compress-meta"></div>
       </div>
       <div class="panel">
@@ -210,6 +228,34 @@
         <div class="field" id="compress-quality-field">
           <div class="range-label"><span>Quality</span><span id="compress-quality-value">80%</span></div>
           <input type="range" id="compress-quality" min="1" max="100" value="80">
+        </div>
+        <div class="field target-field">
+          <div class="inline-check">
+            <input type="checkbox" id="compress-target-on">
+            <label for="compress-target-on">Compress to a target file size</label>
+          </div>
+          <p class="hint">Type a budget and the tool searches for the highest quality that fits, in at most eight encodes.</p>
+          <div class="target-body" id="compress-target-body" hidden>
+            <div class="target-row">
+              <input type="number" id="compress-target-amount" min="1" step="1" value="100" aria-label="Target size">
+              <select id="compress-target-unit" aria-label="Target size unit">
+                <option value="kb">KB</option>
+                <option value="mb">MB</option>
+              </select>
+              <button type="button" class="ghost" id="compress-target-cancel" hidden>Cancel</button>
+            </div>
+            <div class="target-presets" id="compress-target-presets" role="group" aria-label="Common budgets">
+              <button type="button" class="chip" data-preset="web">Web 200 KB</button>
+              <button type="button" class="chip" data-preset="1mb">1 MB</button>
+              <button type="button" class="chip" data-preset="email">Email 5 MB</button>
+              <button type="button" class="chip" data-preset="discord">Discord 8 MB</button>
+            </div>
+            <div class="inline-check">
+              <input type="checkbox" id="compress-target-scale" checked>
+              <label for="compress-target-scale">Shrink the dimensions if quality alone cannot reach it</label>
+            </div>
+            <p class="target-status" id="compress-target-status" role="status"></p>
+          </div>
         </div>
         <div class="btn-row">
           <button type="button" class="primary download-btn" id="compress-download" disabled>
@@ -227,6 +273,7 @@
           <div class="btn-row">
             <button type="button" class="primary" id="compress-batch-run">Process all</button>
             <button type="button" class="ghost" id="compress-batch-zip" disabled>Download ZIP</button>
+            <button type="button" class="ghost" id="compress-batch-copy" style="position:relative;" disabled>Copy summary<span class="copy-flash" id="compress-batch-copied">Copied!</span></button>
           </div>
           <p class="batch-summary" id="compress-batch-summary" role="status"></p>
         </div>
@@ -507,6 +554,7 @@
   <section class="container-narrow" style="padding-top:44px;">
     <h2 style="margin-top:0;">Eight image tools, zero uploads</h2>
     <p>PhotoShrink runs every tool locally in your browser using the HTML <strong>Canvas API</strong> — the same engine browsers use to draw web pages. When you drop in a photo, it's decoded and processed entirely on your device; the pixels never touch a network request. That means no upload wait, no file-size limit imposed by a server, and no copy of your photos sitting on someone else's disk.</p>
+    <p>Working to a hard file-size limit? The compressor can search for it: <a href="/compress-image-to-100kb">Compress image to 100KB</a>, <a href="/compress-image-to-200kb">Compress image to 200KB</a>, <a href="/compress-image-to-500kb">Compress image to 500KB</a>, <a href="/compress-image-to-1mb">Compress image to 1MB</a>, <a href="/compress-image-for-email">Compress image for email</a>, <a href="/compress-image-for-discord">Compress image for Discord</a>.</p>
     <p>Prefer a dedicated page for one tool? Each one also lives on its own: <a href="/resize-image">Resize</a>, <a href="/compress-image">Compress</a>, <a href="/crop-image">Crop</a>, <a href="/convert-image">Convert</a>, <a href="/rotate-image">Rotate &amp; Flip</a>, <a href="/image-to-base64">Image to Base64</a>, <a href="/favicon-generator">Favicon Generator</a>, and <a href="/exif-viewer">EXIF Viewer &amp; Metadata Stripper</a>.</p>
   </section>
 

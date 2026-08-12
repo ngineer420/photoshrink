@@ -471,7 +471,9 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
 .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
 .footer-links a { color: var(--ink-dim); }
 
-.erabbit-mark { display: block; width: 10px; margin: 0 0 0 auto; line-height: 0; }
+/* cursor: default overrides the link hand — the mark is meant to be missable,
+   and a pointing finger on hover advertises it. */
+.erabbit-mark { display: block; width: 10px; margin: 0 0 0 auto; line-height: 0; cursor: default; }
 .erabbit-mark img { display: block; width: 10px; height: 10px; margin-left: auto; }
 
 /* ---------- misc ---------- */
@@ -484,3 +486,150 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
 ::-webkit-scrollbar-track { background: var(--paper-inset); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+
+/* ==========================================================================
+   TARGET FILE SIZE + BEFORE/AFTER COMPARE
+   ========================================================================== */
+
+.hint { margin: 6px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-dim); }
+
+.inline-check { display: flex; align-items: flex-start; gap: 9px; }
+.inline-check input[type="checkbox"] { width: 17px; height: 17px; margin: 2px 0 0; flex: 0 0 auto; accent-color: var(--coral); }
+.inline-check label { margin: 0; font-weight: 700; font-size: 14px; line-height: 1.4; }
+
+.target-field {
+  background: var(--paper-inset);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.target-body { margin-top: 14px; }
+.target-row { display: flex; gap: 8px; align-items: center; }
+/* minmax(0,…) via min-width:0 — the number input must be allowed to shrink
+   below its intrinsic width or the row overflows the panel on a phone. */
+.target-row input[type="number"] { flex: 1 1 0; min-width: 0; }
+.target-row select { flex: 0 0 86px; }
+.target-row .ghost { flex: 0 0 auto; }
+
+.target-presets { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 12px; }
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 700;
+  padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  background: var(--paper-raised); color: var(--ink-dim);
+  border: 1px solid var(--border);
+}
+.chip:hover { color: var(--ink); border-color: var(--coral); }
+.chip.is-on { background: var(--coral); border-color: var(--coral); color: var(--coral-contrast); }
+.chip:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.target-status {
+  margin: 10px 0 0; font-size: 13px; line-height: 1.5;
+  color: var(--ink-dim); font-family: var(--mono);
+  overflow-wrap: anywhere;
+}
+.target-status.is-miss { color: var(--danger); }
+
+.workspace.is-working .target-status::after {
+  content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 7px;
+  border-radius: 50%; background: var(--coral); vertical-align: middle;
+  animation: target-pulse 1s ease-in-out infinite;
+}
+@keyframes target-pulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+/* ---- compare slider ---- */
+
+.compare-stage { padding: 0; overflow: hidden; }
+.compare {
+  width: 100%; max-height: 480px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.compare[data-zoom="actual"] { overflow: auto; align-items: flex-start; justify-content: flex-start; }
+
+.compare-frame {
+  position: relative;
+  max-width: 100%;
+  line-height: 0;
+  flex: 0 0 auto;
+  touch-action: none; /* a drag across the image must not scroll the page */
+}
+.compare-img {
+  display: block; max-width: 100%; max-height: 480px;
+  width: auto; height: auto; border-radius: 0;
+  user-select: none; -webkit-user-drag: none;
+}
+.compare[data-zoom="actual"] .compare-img { max-width: none; max-height: none; }
+/* The two layers must occupy exactly the same box, so only the first one is in
+   flow and the second is pinned on top of it. */
+.compare-after { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.compare-divider {
+  position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 2px; margin-left: -1px; background: var(--coral);
+  pointer-events: none;
+}
+.compare-handle {
+  position: absolute; top: 50%; left: 50%;
+  width: 38px; height: 38px; margin: -19px 0 0 -19px;
+  border-radius: 50%; cursor: ew-resize;
+  background: var(--coral); border: 3px solid var(--coral-contrast);
+  box-shadow: 0 2px 10px rgba(36, 26, 18, .35);
+  touch-action: none;
+}
+.compare-handle::before,
+.compare-handle::after {
+  content: ""; position: absolute; top: 50%; width: 0; height: 0;
+  border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+  margin-top: -5px;
+}
+.compare-handle::before { left: 8px; border-right: 6px solid var(--coral-contrast); }
+.compare-handle::after { right: 8px; border-left: 6px solid var(--coral-contrast); }
+.compare-handle:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+.compare-tag {
+  position: absolute; bottom: 8px;
+  font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px; line-height: 1.4;
+  background: rgba(36, 26, 18, .68); color: #fff; pointer-events: none;
+}
+.compare-tag-l { left: 8px; }
+.compare-tag-r { right: 8px; }
+
+.compare-controls {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin-top: 10px;
+}
+.compare-hint { font-size: 12.5px; color: var(--ink-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace.is-working .target-status::after { animation: none; opacity: .8; }
+}
+
+@media (max-width: 560px) {
+  .compare-handle { width: 44px; height: 44px; margin: -22px 0 0 -22px; }
+  .target-row { flex-wrap: wrap; }
+  .target-row select { flex: 0 0 78px; }
+}
+
+/* Secondary nav: the target-size landing pages. The primary tab bar stays the
+   eight tools — pushing fourteen links into one row would wreck it — so these
+   get their own labelled row under it. */
+.subnav {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  margin: -6px 0 18px;
+}
+.subnav-label {
+  font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.subnav-links { display: flex; flex-wrap: wrap; gap: 7px; }
+.subnav-links a {
+  font-size: 12.5px; font-weight: 700; text-decoration: none;
+  padding: 5px 11px; border-radius: 999px;
+  color: var(--ink-dim); background: var(--paper-raised);
+  border: 1px solid var(--border);
+}
+.subnav-links a:hover { color: var(--ink); border-color: var(--coral); }
+.subnav-links a[aria-current="page"] {
+  background: var(--coral); border-color: var(--coral); color: var(--coral-contrast);
+}
+.subnav-links a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }

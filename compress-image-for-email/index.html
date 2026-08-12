@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
-<title>Image Compressor — Shrink Photo File Size, Free — photoshrink.net</title>
-<meta name="description" content="Compress JPEG and WebP images with a live quality slider and instant before/after file sizes. Free, and 100% in your browser — nothing is uploaded.">
-<link rel="canonical" href="https://photoshrink.net/compress-image">
+<title>Compress Image for Email — Get Under the Attachment Limit | PhotoShrink</title>
+<meta name="description" content="Compress images to fit an email attachment limit, in your browser. Defaults to a 5MB budget — the safe figure across Gmail, Outlook and corporate mail servers — with a batch mode for a whole folder.">
+<link rel="canonical" href="https://photoshrink.net/compress-image-for-email">
 <meta name="theme-color" content="#fbf6ee">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Image Compressor — Shrink Photo File Size, Free">
-<meta property="og:description" content="Compress JPEG and WebP images with a live quality slider and instant before/after file sizes. Runs entirely client-side.">
-<meta property="og:url" content="https://photoshrink.net/compress-image">
+<meta property="og:title" content="Compress Image for Email">
+<meta property="og:description" content="Compress images to fit an email attachment limit, in your browser. Defaults to a 5MB budget — the safe figure across Gmail, Outlook and corporate mail servers — with a batch mode for a whole folder.">
+<meta property="og:url" content="https://photoshrink.net/compress-image-for-email">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Image Compressor — Shrink Photo File Size, Free">
-<meta name="twitter:description" content="Compress JPEG and WebP images with a live quality slider. Runs entirely client-side — nothing is uploaded.">
+<meta name="twitter:title" content="Compress Image for Email">
+<meta name="twitter:description" content="Compress images to fit an email attachment limit, in your browser. Defaults to a 5MB budget — the safe figure across Gmail, Outlook and corporate mail servers — with a batch mode for a whole folder.">
 
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/styles.css">
@@ -24,18 +24,28 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Image Compressor — PhotoShrink",
-  "url": "https://photoshrink.net/compress-image",
-  "applicationCategory": "PhotoApplication",
+  "name": "Compress Image for Email",
+  "url": "https://photoshrink.net/compress-image-for-email",
+  "applicationCategory": "MultimediaApplication",
   "operatingSystem": "Any",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "description": "Free browser-based image compressor: quality slider for JPEG/WebP with live before/after file sizes."
+  "description": "Compress images to fit an email attachment limit, in your browser. Defaults to a 5MB budget — the safe figure across Gmail, Outlook and corporate mail servers — with a batch mode for a whole folder."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What size should an email attachment be?", "acceptedAnswer": {"@type": "Answer", "text": "Aim for 5 MB or less for the whole message. Gmail and Outlook allow far more, but corporate mail servers frequently cap incoming mail at 10 MB or even 5, and the smallest limit on the path is the one that decides."}},
+    {"@type": "Question", "name": "Why does my 20 MB of photos bounce off a 25 MB limit?", "acceptedAnswer": {"@type": "Answer", "text": "Because attachments are encoded for transit, which inflates them by roughly a third. Twenty megabytes of files is about twenty-seven megabytes of email. Budget against the raw size with room to spare."}}
+  ]
 }
 </script>
 
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
 </head>
-<body>
+<body data-compress-target="5242880">
 <a class="skip-link" href="#main">Skip to content</a>
 
 <header class="site-header">
@@ -74,7 +84,7 @@
 
   <nav class="subnav" aria-label="Compress to a target size">
     <span class="subnav-label">Target size</span>
-    <div class="subnav-links"><a href="/compress-image" aria-current="page">Any size</a><a href="/compress-image-to-100kb">100 KB</a><a href="/compress-image-to-200kb">200 KB</a><a href="/compress-image-to-500kb">500 KB</a><a href="/compress-image-to-1mb">1 MB</a><a href="/compress-image-for-email">Email</a><a href="/compress-image-for-discord">Discord</a></div>
+    <div class="subnav-links"><a href="/compress-image">Any size</a><a href="/compress-image-to-100kb">100 KB</a><a href="/compress-image-to-200kb">200 KB</a><a href="/compress-image-to-500kb">500 KB</a><a href="/compress-image-to-1mb">1 MB</a><a href="/compress-image-for-email" aria-current="page">Email</a><a href="/compress-image-for-discord">Discord</a></div>
   </nav>
 
   <section id=\"panel-compress\" class="tool-panel tab-panel active" data-prefix="compress">
@@ -177,37 +187,41 @@
   </section>
 
   <section class="container-narrow" style="padding-top:44px;">
-    <h2 style="margin-top:0;">About this image compressor</h2>
-    <p>The quality slider controls how aggressively JPEG or WebP throws away detail you're unlikely to notice — lower values produce smaller files at the cost of some visible softening or blocky artifacts, especially around sharp edges. Watch the <strong>Before</strong> and <strong>After</strong> byte sizes update live as you drag, find the point where the size drop is worth it, and download.</p>
-    <h2>How to compress an image</h2>
+    <h2 style="margin-top:0;">Attachment limits are smaller than the number you were told</h2>
+    <p>Gmail advertises 25 MB and Outlook.com 20, but the number that actually decides whether your mail arrives is the smallest limit anywhere on the path — and corporate Exchange servers very commonly cap incoming mail at 10 MB, with plenty sitting at 5. You do not control the receiving end, which is why five megabytes is the budget this page defaults to: it is the figure that gets through essentially everywhere.</p>
+    <p>There is a second reason the advertised limit misleads. Attachments are MIME-encoded in transit, which inflates them by about a third, so a 20 MB pile of photos is roughly 27 MB on the wire and bounces off a 25 MB limit. Budgeting against the raw file size with room to spare is the only way to be sure.</p>
+    <p>If you are sending several photos, use the batch queue rather than doing them one at a time. The target applies per file, so each photo gets its own quality search rather than one setting applied blindly to all of them, and the copyable summary at the end gives you the total to paste into the mail itself.</p>
+
+    <h2>How to compress an image to Email</h2>
     <ol>
-      <li>Drop, browse to, or paste a photo into the box above.</li>
-      <li>Pick JPEG or WebP (WebP is usually smaller at the same visual quality).</li>
-      <li>Drag the quality slider and watch the before/after sizes update.</li>
-      <li>Download once you're happy with the size-vs-quality tradeoff.</li>
+      <li>Drop your image on the panel above — or paste it, or drop a whole folder to do the lot at once.</li>
+      <li>The Email budget is already set. Change it if you need something different.</li>
+      <li>The tool searches for the highest quality that fits and tells you what it settled on and how many encodes it took.</li>
+      <li>Drag the divider across the preview to see the original against the result, and switch to 1:1 zoom to judge the artifacts at real pixel scale.</li>
+      <li>Download. Nothing was uploaded at any point — the whole thing ran on your own machine.</li>
     </ol>
-    <h2>FAQ</h2>
+
+    <h2>Questions</h2>
     <div class="faq-item">
-      <h3>Why doesn't the PNG option shrink the file much?</h3>
-      <p>PNG is lossless — it never throws away detail, so there's no quality slider to exploit. Its size depends entirely on the image content (photos compress worse than flat-color graphics). For photos, switch to JPEG or WebP.</p>
+      <h3>What size should an email attachment be?</h3>
+      <p>Aim for 5 MB or less for the whole message. Gmail and Outlook allow far more, but corporate mail servers frequently cap incoming mail at 10 MB or even 5, and the smallest limit on the path is the one that decides.</p>
     </div>
     <div class="faq-item">
-      <h3>What quality setting should I use?</h3>
-      <p>80–90% is a safe range for photos — most people can't spot the difference from the original, but the file is meaningfully smaller. Below 60% you start trading size for visible artifacts. See our <a href="/articles/how-image-compression-works.html">compression guide</a> for the details.</p>
+      <h3>Why does my 20 MB of photos bounce off a 25 MB limit?</h3>
+      <p>Because attachments are encoded for transit, which inflates them by roughly a third. Twenty megabytes of files is about twenty-seven megabytes of email. Budget against the raw size with room to spare.</p>
     </div>
-    <div class="faq-item">
-      <h3>Does compressing also resize the image?</h3>
-      <p>No — dimensions stay the same, only file size changes. Combine it with the <a href="/resize-image">resizer</a> first if you also want smaller pixel dimensions.</p>
-    </div>
-    <h2>More image tools</h2>
+
+    <h2>Other target sizes</h2>
     <ul>
-      <li><a href="/resize-image">Image Resizer</a></li>
-      <li><a href="/convert-image">Image Converter</a></li>
-      <li><a href="/crop-image">Image Cropper</a></li>
-      <li><a href="/">All tools on one page (home)</a></li>
+      <li><a href="/compress-image-to-100kb">Compress Image to 100KB</a></li>
+      <li><a href="/compress-image-to-200kb">Compress Image to 200KB</a></li>
+      <li><a href="/compress-image-to-500kb">Compress Image to 500KB</a></li>
+      <li><a href="/compress-image-to-1mb">Compress Image to 1MB</a></li>
+      <li><a href="/compress-image-for-discord">Compress Image for Discord</a></li>
+      <li><a href="/compress-image">Compress to any size, or by quality</a></li>
     </ul>
   </section>
-</main>
+  </main>
 
 <footer class="site-footer">
   <div class="footer-inner">
