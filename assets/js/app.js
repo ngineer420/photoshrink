@@ -72,6 +72,162 @@ function debounce(fn, ms) {
   };
 }
 
+/* ========================= target file size mode =========================
+
+   "Compress to under 100 KB" is the actual job, and a raw quality slider makes
+   the visitor do the binary search by hand. So the tool does it instead.
+
+   Everything in this block is pure. `targetQualitySearch` never touches a
+   canvas — it takes an `encode(quality) -> byte count` function, which is what
+   lets the test file drive it against a synthetic encoder and what lets the
+   caller decide whether an encode happens on the main thread, off it, or at a
+   reduced size. */
+
+const KB = 1024;
+const MB = 1024 * 1024;
+
+// The budgets people actually arrive with. `bytes` is the hard cap, not a
+// target to hit — landing a little under is a success, landing over is not.
+const TARGET_PRESETS = {
+  web: { bytes: 200 * KB, label: "Web upload — 200 KB" },
+  "100kb": { bytes: 100 * KB, label: "Upload form limit — 100 KB" },
+  "500kb": { bytes: 500 * KB, label: "Forum or CMS — 500 KB" },
+  "1mb": { bytes: 1 * MB, label: "General purpose — 1 MB" },
+  email: { bytes: 5 * MB, label: "Email attachment — 5 MB" },
+  discord: { bytes: 8 * MB, label: "Discord free tier — 8 MB" },
+};
+
+function budgetFromPreset(preset) {
+  if (typeof preset !== "string") return null;
+  if (!Object.prototype.hasOwnProperty.call(TARGET_PRESETS, preset)) return null;
+  return TARGET_PRESETS[preset].bytes;
+}
+
+// A typed budget: a number plus a unit. Anything that isn't a positive finite
+// number is rejected outright rather than silently becoming NaN bytes.
+function parseBudget(amount, unit) {
+  const n = Number(amount);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  const multiplier = unit === "mb" ? MB : unit === "b" ? 1 : KB;
+  const bytes = Math.round(n * multiplier);
+  return bytes > 0 ? bytes : null;
+}
+
+/* Highest quality that fits the budget, found by bisection.
+
+   `encode(quality)` returns (or resolves to) the byte count at that quality.
+   Options: minQuality/maxQuality bound the search, maxPasses caps how many
+   encodes are allowed — these are full-size encodes of the visitor's photo, so
+   the cap is a hard promise about how long the tab is busy, not a tuning knob —
+   `tolerance` stops bisecting once the bracket is narrower than a difference
+   anyone could see, and `shouldCancel()` is polled before every encode so a
+   run in flight can be abandoned.
+
+   Returns { quality, size, passes, fits, cancelled }. `fits` false means even
+   the lowest quality missed the budget, and the caller should downscale. */
+async function targetQualitySearch(encode, targetBytes, options) {
+  const opts = Object.assign(
+    { minQuality: 0.05, maxQuality: 0.95, maxPasses: 8, tolerance: 0.01 },
+    options || {}
+  );
+  const shouldCancel = typeof opts.shouldCancel === "function" ? opts.shouldCancel : () => false;
+  if (!(targetBytes > 0)) throw new Error("A target size has to be a positive number of bytes.");
+  if (typeof encode !== "function") throw new Error("targetQualitySearch needs an encode function.");
+
+  let passes = 0;
+  let lo = opts.minQuality;
+  let hi = opts.maxQuality;
+  let best = null; // the highest quality seen that fit
+  let smallest = null; // fallback for when nothing fits
+
+  // Returns the byte count, or null if the run was cancelled.
+  async function measure(quality) {
+    if (shouldCancel()) return null;
+    const size = await encode(quality);
+    passes += 1;
+    if (!smallest || size < smallest.size) smallest = { quality, size };
+    if (size <= targetBytes && (!best || quality > best.quality)) best = { quality, size };
+    return size;
+  }
+
+  // The ceiling first. A generous budget is satisfied in a single encode, and
+  // on a 12 megapixel photo one encode versus eight is the whole difference
+  // between a tool that feels instant and one that locks the tab.
+  const topSize = await measure(hi);
+  if (topSize === null) return { quality: hi, size: 0, passes, fits: false, cancelled: true };
+  if (topSize <= targetBytes) {
+    return { quality: hi, size: topSize, passes, fits: true, cancelled: false };
+  }
+
+  // Then the floor. If the worst quality still misses, no amount of bisecting
+  // between them will find a fit — say so immediately rather than burning six
+  // more full-size encodes proving it.
+  const bottomSize = await measure(lo);
+  if (bottomSize === null) return { quality: lo, size: 0, passes, fits: false, cancelled: true };
+  if (bottomSize > targetBytes) {
+    return { quality: smallest.quality, size: smallest.size, passes, fits: false, cancelled: false };
+  }
+
+  best = { quality: lo, size: bottomSize };
+  while (passes < opts.maxPasses && hi - lo > opts.tolerance) {
+    const mid = (lo + hi) / 2;
+    const size = await measure(mid);
+    if (size === null) return { quality: best.quality, size: best.size, passes, fits: true, cancelled: true };
+    if (size <= targetBytes) lo = mid;
+    else hi = mid;
+  }
+
+  return { quality: best.quality, size: best.size, passes, fits: true, cancelled: false };
+}
+
+/* When quality alone cannot reach the budget, the pixels have to go.
+
+   File size tracks pixel count closely enough for a first guess, so the linear
+   dimensions scale with the square root of the size ratio. `safety` aims a
+   little under the budget, because the estimate is a guess and coming back for
+   a second downscale costs another round of full encodes. Never upscales. */
+function downscaleFactorForBudget(currentBytes, targetBytes, safety) {
+  const margin = typeof safety === "number" ? safety : 0.9;
+  if (!(currentBytes > 0) || !(targetBytes > 0)) return 1;
+  if (currentBytes <= targetBytes) return 1;
+  return clamp(Math.sqrt((targetBytes / currentBytes) * margin), 0.1, 1);
+}
+
+/* PNG has no quality parameter, so there is nothing for the search to bisect.
+   Rather than silently doing nothing or silently changing the file type, the
+   tool names the substitute it intends to make and the UI says so. */
+function targetFormatFor(format) {
+  if (format === "png") return { format: "webp", switched: true };
+  return { format, switched: false };
+}
+
+// The line under a finished search: what it settled on and what it cost.
+function describeTargetResult(result, targetBytes) {
+  if (!result) return "";
+  if (result.cancelled) return "Cancelled.";
+  const passes = `${result.passes} ${result.passes === 1 ? "pass" : "passes"}`;
+  if (!result.fits) {
+    return `Could not reach ${formatBytes(targetBytes)} by quality alone — smallest was ${formatBytes(result.size)} at quality ${Math.round(result.quality * 100)}% after ${passes}.`;
+  }
+  return `${formatBytes(result.size)} at quality ${Math.round(result.quality * 100)}% — found in ${passes}.`;
+}
+
+/* The batch's copyable summary. Built here rather than in the DOM so the exact
+   text is testable and so it cannot drift from what the rows show. */
+function buildBatchSummaryText(rows) {
+  const done = (rows || []).filter((r) => r && Number.isFinite(r.after));
+  if (!done.length) return "";
+  const before = done.reduce((sum, r) => sum + r.before, 0);
+  const after = done.reduce((sum, r) => sum + r.after, 0);
+  const lines = done.map(
+    (r) => `${r.name}: ${formatBytes(r.before)} → ${formatBytes(r.after)} (${percentSaved(r.before, r.after)}% smaller)`
+  );
+  lines.push(
+    `Total: ${done.length} ${done.length === 1 ? "image" : "images"}, ${formatBytes(before)} → ${formatBytes(after)} (${percentSaved(before, after)}% smaller, ${formatBytes(Math.max(0, before - after))} saved)`
+  );
+  return lines.join("\n");
+}
+
 /* ============================= resize tool ============================= */
 
 function resizeByPercent(origW, origH, percent) {
@@ -608,6 +764,14 @@ if (typeof module !== "undefined" && module.exports) {
     formatFromMimeType,
     stripExtension,
     debounce,
+    TARGET_PRESETS,
+    budgetFromPreset,
+    parseBudget,
+    targetQualitySearch,
+    downscaleFactorForBudget,
+    targetFormatFor,
+    describeTargetResult,
+    buildBatchSummaryText,
     resizeByPercent,
     resizeByDimension,
     normalizeAngle,
@@ -779,6 +943,10 @@ if (typeof document !== "undefined") {
       const clearBtn = $(prefix + "-batch-clear");
       const summary = $(prefix + "-batch-summary");
       const overall = $(prefix + "-batch-bar");
+      // Optional: only the compress panel mounts one, and createBatch stays
+      // generic by looking for it rather than being told about it.
+      const copyBtn = $(prefix + "-batch-copy");
+      const copiedFlag = $(prefix + "-batch-copied");
 
       let items = [];
       let running = false;
@@ -884,6 +1052,7 @@ if (typeof document !== "undefined") {
           ? `${done.length} of ${items.length} processed · ${formatBytes(before)} → ${formatBytes(after)} (${percentSaved(before, after)}% smaller)` +
             (failed.length ? ` · ${failed.length} failed` : "")
           : "Nothing was processed.";
+        if (copyBtn) copyBtn.disabled = !done.length;
         paintAll();
       }
 
@@ -913,6 +1082,7 @@ if (typeof document !== "undefined") {
         list.innerHTML = "";
         root.hidden = true;
         summary.textContent = "";
+        if (copyBtn) copyBtn.disabled = true;
         overall.style.width = "0%";
         paintAll();
       }
@@ -932,15 +1102,155 @@ if (typeof document !== "undefined") {
         });
         if (changed) {
           summary.textContent = "Settings changed — run the batch again.";
+          if (copyBtn) copyBtn.disabled = true;
           paintAll();
         }
       }
 
+      // The per-file before/after/savings lines plus a total, as text someone
+      // can paste into the thread they are about to send the images to.
+      function summaryRows() {
+        return items
+          .filter((it) => it.result)
+          .map((it) => ({ name: it.result.name, before: it.file.size, after: it.result.blob.size }));
+      }
+
       runBtn.addEventListener("click", run);
       zipBtn.addEventListener("click", downloadZip);
+      if (copyBtn) {
+        copyBtn.addEventListener("click", () => {
+          const text = buildBatchSummaryText(summaryRows());
+          if (text) copyText(text, copiedFlag);
+        });
+      }
       clearBtn.addEventListener("click", clear);
 
       return { add, invalidate, clear };
+    }
+
+    /* ---- before/after compare slider ----
+
+       "Did it wreck my photo" is the unspoken question behind every compression
+       tool, and a byte count cannot answer it. Two images stacked, the top one
+       clipped by a draggable divider, plus a 1:1 zoom so the artifacts can be
+       judged at real pixel scale rather than at whatever size the panel happens
+       to be. Returns no-ops when the markup is absent, like everything else
+       here, so the same script still runs on pages without it. */
+    function createCompare(prefix) {
+      const root = $(prefix + "-compare");
+      if (!root) return { setBefore() {}, setAfter() {}, reset() {} };
+
+      const frame = $(prefix + "-frame");
+      const before = $(prefix + "-before");
+      const after = $(prefix + "-after");
+      const handle = $(prefix + "-handle");
+      const divider = $(prefix + "-divider");
+      const zoomBtn = $(prefix + "-zoom");
+
+      let pos = 50;
+      let dragging = false;
+
+      function paint() {
+        // The compressed layer is clipped away on the LEFT of the divider, so
+        // the original shows on the left and the result on the right, matching
+        // the two labels.
+        after.style.clipPath = `inset(0 0 0 ${pos}%)`;
+        handle.style.left = pos + "%";
+        if (divider) divider.style.left = pos + "%";
+        const n = Math.round(pos);
+        handle.setAttribute("aria-valuenow", String(n));
+        handle.setAttribute("aria-valuetext", `${n}% original, ${100 - n}% compressed`);
+      }
+
+      function posFromEvent(e) {
+        const r = frame.getBoundingClientRect();
+        if (!r.width) return pos;
+        return clamp(((e.clientX - r.left) / r.width) * 100, 0, 100);
+      }
+
+      function move(e) {
+        pos = posFromEvent(e);
+        paint();
+      }
+
+      // Pointer events cover mouse, pen and touch in one path; the capture is
+      // what keeps a drag alive when the finger leaves the image.
+      handle.addEventListener("pointerdown", (e) => {
+        dragging = true;
+        if (handle.setPointerCapture) handle.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+      handle.addEventListener("pointermove", (e) => { if (dragging) move(e); });
+      const stop = () => { dragging = false; };
+      handle.addEventListener("pointerup", stop);
+      handle.addEventListener("pointercancel", stop);
+      // Clicking anywhere on the image jumps the divider there, which is
+      // quicker than dragging it across on a phone.
+      frame.addEventListener("pointerdown", (e) => {
+        if (e.target === handle) return;
+        move(e);
+      });
+
+      handle.addEventListener("keydown", (e) => {
+        const step = e.shiftKey ? 10 : 2;
+        let next = pos;
+        if (e.key === "ArrowLeft" || e.key === "ArrowDown") next = pos - step;
+        else if (e.key === "ArrowRight" || e.key === "ArrowUp") next = pos + step;
+        else if (e.key === "Home") next = 0;
+        else if (e.key === "End") next = 100;
+        else return;
+        e.preventDefault();
+        pos = clamp(next, 0, 100);
+        paint();
+      });
+
+      function applyZoom() {
+        const actual = root.dataset.zoom === "actual";
+        if (actual && before.naturalWidth) {
+          // One image pixel per CSS pixel — the only scale at which a
+          // compression artifact is the size it will actually be.
+          frame.style.width = before.naturalWidth + "px";
+          frame.style.height = before.naturalHeight + "px";
+        } else {
+          frame.style.width = "";
+          frame.style.height = "";
+        }
+        if (zoomBtn) {
+          zoomBtn.setAttribute("aria-pressed", String(actual));
+          zoomBtn.textContent = actual ? "Fit to panel" : "Zoom to 1:1";
+        }
+      }
+
+      if (zoomBtn) {
+        zoomBtn.addEventListener("click", () => {
+          root.dataset.zoom = root.dataset.zoom === "actual" ? "fit" : "actual";
+          applyZoom();
+          if (root.dataset.zoom === "actual") {
+            // Land in the middle of the picture rather than the top-left
+            // corner, which is usually sky.
+            root.scrollLeft = (frame.offsetWidth - root.clientWidth) / 2;
+            root.scrollTop = (frame.offsetHeight - root.clientHeight) / 2;
+          }
+        });
+      }
+
+      return {
+        setBefore(url) {
+          before.src = url;
+          before.onload = applyZoom;
+          paint();
+        },
+        setAfter(url) {
+          after.src = url;
+          paint();
+        },
+        reset() {
+          pos = 50;
+          root.dataset.zoom = "fit";
+          applyZoom();
+          paint();
+        },
+      };
     }
 
     // Fallback: paste anywhere on a tool page routes to whichever tool panel
@@ -1216,6 +1526,7 @@ if (typeof document !== "undefined") {
       downloadBtn.addEventListener("click", () => {
         if (downloadBtn._blob) downloadBlob(downloadBtn._blob, downloadBtn._name);
       });
+
     })();
 
     /* ---- Compress tool ---- */
@@ -1234,35 +1545,166 @@ if (typeof document !== "undefined") {
       const qualityValue = $("compress-quality-value");
       const downloadBtn = $("compress-download");
 
-      let current = null;
+      const targetOn = $("compress-target-on");
+      const targetBody = $("compress-target-body");
+      const targetAmount = $("compress-target-amount");
+      const targetUnit = $("compress-target-unit");
+      const targetScale = $("compress-target-scale");
+      const targetStatus = $("compress-target-status");
+      const targetCancel = $("compress-target-cancel");
+      const targetPresets = $("compress-target-presets");
 
-      const render = debounce(async () => {
-        if (!current) return;
-        canvas.width = current.width;
-        canvas.height = current.height;
-        ctx.clearRect(0, 0, current.width, current.height);
-        const fmt = formatSelect.value;
+      const compare = createCompare("compress");
+
+      let current = null;
+      let outUrl = null; // object URL of the compressed preview; revoked on replace
+
+      /* One token guards every async render. Bumping it makes any run already
+         in flight abandon itself at its next checkpoint, which is what makes
+         both the Cancel button and "the visitor typed another digit" safe —
+         without it two overlapping searches can finish out of order and the
+         slower, staler one wins. */
+      let runToken = 0;
+
+      function setPreviewBlob(blob) {
+        if (outUrl) URL.revokeObjectURL(outUrl);
+        outUrl = URL.createObjectURL(blob);
+        compare.setAfter(outUrl);
+      }
+
+      function targetBudget() {
+        return parseBudget(targetAmount.value, targetUnit.value);
+      }
+
+      function setBusy(busy) {
+        if (targetCancel) targetCancel.hidden = !busy;
+        workspace.classList.toggle("is-working", busy);
+      }
+
+      /* Draw `current` into the canvas at `scale`, ready to encode. Kept
+         separate from the encode so the binary search can re-encode the same
+         pixels eight times without redrawing them eight times. */
+      function drawAt(scale, fmt) {
+        const w = Math.max(1, Math.round(current.width * scale));
+        const h = Math.max(1, Math.round(current.height * scale));
+        canvas.width = w;
+        canvas.height = h;
+        ctx.clearRect(0, 0, w, h);
         if (fmt === "jpeg") {
           ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, current.width, current.height);
+          ctx.fillRect(0, 0, w, h);
         }
-        ctx.drawImage(current.img, 0, 0);
+        ctx.drawImage(current.img, 0, 0, w, h);
+        return { width: w, height: h };
+      }
 
-        const lossy = fmt === "jpeg" || fmt === "webp";
-        qualityField.hidden = !lossy;
-        const quality = lossy ? Number(qualityInput.value) / 100 : undefined;
-        const blob = await canvasToBlob(canvas, mimeForFormat(fmt), quality);
-        if (!blob) return;
+      function applyResult(blob, fmt, extra) {
         const saved = percentSaved(current.size, blob.size);
-        setMeta(meta, [
+        const rows = [
           ["Before", formatBytes(current.size)],
           ["After", formatBytes(blob.size)],
           ["Savings", `${saved}%`, saved >= 0 ? "save-tag" : ""],
-        ]);
+        ];
+        if (extra) rows.push(extra);
+        setMeta(meta, rows);
+        setPreviewBlob(blob);
         downloadBtn.disabled = false;
         downloadBtn._blob = blob;
         downloadBtn._name = `${stripExtension(current.name)}-compressed.${extensionForFormat(fmt)}`;
-      }, 120);
+      }
+
+      /* The plain quality-slider path, unchanged in behaviour. */
+      async function renderByQuality(token) {
+        const fmt = formatSelect.value;
+        const lossy = fmt === "jpeg" || fmt === "webp";
+        qualityField.hidden = !lossy;
+        drawAt(1, fmt);
+        const blob = await canvasToBlob(canvas, mimeForFormat(fmt), lossy ? Number(qualityInput.value) / 100 : undefined);
+        if (token !== runToken || !blob) return;
+        applyResult(blob, fmt);
+      }
+
+      /* The target-size path: bisect quality, and only then reach for the
+         pixels. Every encode is a full-size canvas.toBlob on the main thread,
+         so the loop yields to the browser before each one — that is what keeps
+         the tab responsive on a 12 megapixel photo AND what lets the Cancel
+         click actually be delivered mid-run. */
+      async function renderByTarget(token) {
+        const budget = targetBudget();
+        if (!budget) {
+          targetStatus.textContent = "Type a target size to search for.";
+          return;
+        }
+        // PNG has no quality knob for the search to bisect, so target mode
+        // needs a lossy format. Say which one it picked rather than silently
+        // changing the visitor's file type.
+        const chosen = targetFormatFor(formatSelect.value);
+        if (chosen.switched) formatSelect.value = chosen.format;
+        const fmt = chosen.format;
+        qualityField.hidden = true;
+
+        setBusy(true);
+        targetStatus.textContent = "Searching…";
+
+        try {
+          let scale = 1;
+          let dims = drawAt(scale, fmt);
+          let lastBlob = null;
+          const encode = async (quality) => {
+            // Hand the frame back to the browser between encodes.
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            const blob = await canvasToBlob(canvas, mimeForFormat(fmt), quality);
+            if (!blob) throw new Error("This browser can't encode that format");
+            lastBlob = blob;
+            return blob.size;
+          };
+
+          let result = await targetQualitySearch(encode, budget, {
+            shouldCancel: () => token !== runToken,
+          });
+          if (token !== runToken) return;
+
+          let note = "";
+          // Quality alone missed. Shrink the pixels once, using the measured
+          // shortfall rather than a guess, and search again at the new size.
+          if (!result.fits && targetScale.checked && result.size > 0) {
+            scale = downscaleFactorForBudget(result.size, budget);
+            dims = drawAt(scale, fmt);
+            targetStatus.textContent = `Quality alone was not enough — trying ${dims.width}×${dims.height}…`;
+            result = await targetQualitySearch(encode, budget, {
+              shouldCancel: () => token !== runToken,
+            });
+            if (token !== runToken) return;
+            note = ` Resized to ${dims.width}×${dims.height}.`;
+          }
+
+          if (!lastBlob) return;
+          // The search's last encode is not necessarily the winning one, so
+          // re-encode at the quality it settled on before handing it over.
+          await new Promise((resolve) => setTimeout(resolve, 0));
+          const finalBlob = await canvasToBlob(canvas, mimeForFormat(fmt), result.quality);
+          if (token !== runToken || !finalBlob) return;
+
+          applyResult(finalBlob, fmt, ["Quality", `${Math.round(result.quality * 100)}%`]);
+          qualityInput.value = String(Math.round(result.quality * 100));
+          qualityValue.textContent = qualityInput.value + "%";
+          targetStatus.textContent =
+            describeTargetResult(result, budget) + note +
+            (chosen.switched ? " PNG has no quality setting, so this was encoded as WebP." : "");
+          targetStatus.classList.toggle("is-miss", !result.fits);
+        } catch (err) {
+          targetStatus.textContent = err && err.message ? err.message : "That target could not be reached.";
+        } finally {
+          if (token === runToken) setBusy(false);
+        }
+      }
+
+      const render = debounce(async () => {
+        if (!current) return;
+        const token = ++runToken;
+        if (targetOn && targetOn.checked) await renderByTarget(token);
+        else await renderByQuality(token);
+      }, 250);
 
       // The batch reuses whatever the sliders above are set to — the first
       // dropped image stays in the preview precisely so those settings can be
@@ -1271,21 +1713,53 @@ if (typeof document !== "undefined") {
         zipName: "compressed",
         process: async (file, onProgress) => {
           const loaded = await loadImageFromFile(file);
-          onProgress(0.25);
+          onProgress(0.2);
           try {
-            const fmt = formatSelect.value;
+            const targeting = targetOn && targetOn.checked;
+            const budget = targeting ? targetBudget() : null;
+            // Target mode needs a lossy encoder, and the batch has to make the
+            // same substitution the single-image path does or the two would
+            // disagree about what a PNG becomes.
+            const fmt = budget ? targetFormatFor(formatSelect.value).format : formatSelect.value;
             const off = document.createElement("canvas");
-            off.width = loaded.width;
-            off.height = loaded.height;
             const octx = off.getContext("2d");
-            if (fmt === "jpeg") {
-              octx.fillStyle = "#ffffff";
-              octx.fillRect(0, 0, off.width, off.height);
+            function draw(scale) {
+              off.width = Math.max(1, Math.round(loaded.width * scale));
+              off.height = Math.max(1, Math.round(loaded.height * scale));
+              octx.clearRect(0, 0, off.width, off.height);
+              if (fmt === "jpeg") {
+                octx.fillStyle = "#ffffff";
+                octx.fillRect(0, 0, off.width, off.height);
+              }
+              octx.drawImage(loaded.img, 0, 0, off.width, off.height);
             }
-            octx.drawImage(loaded.img, 0, 0);
-            onProgress(0.6);
-            const lossy = fmt === "jpeg" || fmt === "webp";
-            const blob = await canvasToBlob(off, mimeForFormat(fmt), lossy ? Number(qualityInput.value) / 100 : undefined);
+            draw(1);
+            onProgress(0.4);
+
+            let blob;
+            if (budget) {
+              /* Per file, not per batch: a 12 MP photo and a screenshot need
+                 completely different quality to land under the same budget, so
+                 the search runs again for each one. The pass cap is what keeps
+                 that affordable across a folder. */
+              const encode = async (q) => {
+                await new Promise((resolve) => setTimeout(resolve, 0));
+                const b = await canvasToBlob(off, mimeForFormat(fmt), q);
+                if (!b) throw new Error("This browser can't encode that format");
+                return b.size;
+              };
+              let result = await targetQualitySearch(encode, budget);
+              if (!result.fits && targetScale.checked && result.size > 0) {
+                draw(downscaleFactorForBudget(result.size, budget));
+                result = await targetQualitySearch(encode, budget);
+              }
+              onProgress(0.85);
+              blob = await canvasToBlob(off, mimeForFormat(fmt), result.quality);
+            } else {
+              const lossy = fmt === "jpeg" || fmt === "webp";
+              onProgress(0.6);
+              blob = await canvasToBlob(off, mimeForFormat(fmt), lossy ? Number(qualityInput.value) / 100 : undefined);
+            }
             if (!blob) throw new Error("This browser can't encode that format");
             onProgress(1);
             return { blob, name: batchOutputName(loaded.name, "compressed", extensionForFormat(fmt)) };
@@ -1301,9 +1775,14 @@ if (typeof document !== "undefined") {
           try {
             hideError(errorEl);
             const loaded = await loadImageFromFile(file);
+            // The previous source URL is dead the moment a new image lands;
+            // without this every dropped file leaks one.
+            if (current && current.url) URL.revokeObjectURL(current.url);
             current = loaded;
             fname.textContent = `${loaded.name} · ${loaded.width}×${loaded.height}px`;
             formatSelect.value = loaded.type === "image/png" ? "webp" : "jpeg";
+            compare.reset();
+            compare.setBefore(loaded.url);
             workspace.hidden = false;
             workspace.closest(".tool-panel").classList.add("has-image");
             render();
@@ -1327,6 +1806,79 @@ if (typeof document !== "undefined") {
       downloadBtn.addEventListener("click", () => {
         if (downloadBtn._blob) downloadBlob(downloadBtn._blob, downloadBtn._name);
       });
+
+      /* ---- target size wiring ---- */
+      if (targetOn) {
+        function syncTargetUI() {
+          const on = targetOn.checked;
+          targetBody.hidden = !on;
+          // The quality slider is the search's output in target mode, not its
+          // input, so it stops being a control and becomes a readout.
+          qualityField.hidden = on;
+          if (!on) targetStatus.textContent = "";
+        }
+
+        targetOn.addEventListener("change", () => {
+          syncTargetUI();
+          render();
+          if (batch) batch.invalidate();
+        });
+        [targetAmount, targetUnit, targetScale].forEach((el) => {
+          el.addEventListener("input", () => {
+            targetStatus.classList.remove("is-miss");
+            render();
+            if (batch) batch.invalidate();
+          });
+          el.addEventListener("change", () => {
+            render();
+            if (batch) batch.invalidate();
+          });
+        });
+        targetPresets.addEventListener("click", (e) => {
+          const btn = e.target.closest("[data-preset]");
+          if (!btn) return;
+          const bytes = budgetFromPreset(btn.getAttribute("data-preset"));
+          if (!bytes) return;
+          if (bytes >= 1024 * 1024 && bytes % (1024 * 1024) === 0) {
+            targetUnit.value = "mb";
+            targetAmount.value = String(bytes / (1024 * 1024));
+          } else {
+            targetUnit.value = "kb";
+            targetAmount.value = String(Math.round(bytes / 1024));
+          }
+          Array.from(targetPresets.querySelectorAll("[data-preset]")).forEach((b) =>
+            b.classList.toggle("is-on", b === btn)
+          );
+          render();
+          if (batch) batch.invalidate();
+        });
+        // Bumping the token is the whole cancellation mechanism: the run in
+        // flight checks it before every encode and abandons itself.
+        targetCancel.addEventListener("click", () => {
+          runToken += 1;
+          setBusy(false);
+          targetStatus.textContent = "Cancelled.";
+        });
+
+        /* A landing page pre-seeds the budget from the body tag — one attribute
+           rather than a query string, so /compress-image-to-100kb opens ready
+           to go and the canonical URL stays clean. */
+        const seeded = document.body.getAttribute("data-compress-target");
+        if (seeded) {
+          const bytes = budgetFromPreset(seeded) || parseBudget(seeded, "b");
+          if (bytes) {
+            targetOn.checked = true;
+            if (bytes >= 1024 * 1024 && bytes % (1024 * 1024) === 0) {
+              targetUnit.value = "mb";
+              targetAmount.value = String(bytes / (1024 * 1024));
+            } else {
+              targetUnit.value = "kb";
+              targetAmount.value = String(Math.round(bytes / 1024));
+            }
+          }
+        }
+        syncTargetUI();
+      }
     })();
 
     /* ---- Crop tool ---- */

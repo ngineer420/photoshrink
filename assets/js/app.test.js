@@ -8,6 +8,14 @@ const assert = require("node:assert/strict");
 const {
   clamp,
   formatBytes,
+  TARGET_PRESETS,
+  budgetFromPreset,
+  parseBudget,
+  targetQualitySearch,
+  downscaleFactorForBudget,
+  targetFormatFor,
+  describeTargetResult,
+  buildBatchSummaryText,
   percentSaved,
   mimeForFormat,
   extensionForFormat,
@@ -433,4 +441,204 @@ test("stripMetadata dispatches on the mime type, then on the magic bytes", () =>
   assert.ok(stripMetadata(jpeg, ""));
   assert.ok(stripMetadata(makePng(), "application/octet-stream"));
   assert.equal(stripMetadata(new Uint8Array([0x47, 0x49, 0x46, 0x38]), "image/gif"), null, "GIF is not supported");
+});
+
+/* ===================== target file size mode ===================== */
+
+const KB_ = 1024;
+const MB_ = 1024 * 1024;
+
+/* A stand-in encoder with the shape a real one has: size falls monotonically as
+   quality falls, and never below a floor (the pixels themselves cost something).
+   `calls` records every quality asked for, so the search's behaviour — not just
+   its answer — can be asserted on. */
+function fakeEncoder({ atFull = 4 * MB_, floor = 0.05, calls = [] } = {}) {
+  const encode = async (q) => {
+    calls.push(q);
+    return Math.round(atFull * (floor + (1 - floor) * Math.pow(q, 2)));
+  };
+  encode.calls = calls;
+  return encode;
+}
+
+test("budgetFromPreset resolves the named budgets and refuses anything else", () => {
+  assert.equal(budgetFromPreset("web"), 200 * KB_);
+  assert.equal(budgetFromPreset("email"), 5 * MB_);
+  assert.equal(budgetFromPreset("discord"), 8 * MB_);
+  assert.equal(budgetFromPreset("nope"), null);
+  assert.equal(budgetFromPreset(""), null);
+  assert.equal(budgetFromPreset(undefined), null);
+  // A landing page's slug reaches this from the DOM, so inherited keys must not
+  // resolve to a budget.
+  assert.equal(budgetFromPreset("constructor"), null);
+  assert.equal(budgetFromPreset("__proto__"), null);
+});
+
+test("every preset is a positive byte count with a label", () => {
+  Object.keys(TARGET_PRESETS).forEach((k) => {
+    assert.ok(TARGET_PRESETS[k].bytes > 0, `${k} has no budget`);
+    assert.equal(typeof TARGET_PRESETS[k].label, "string");
+  });
+});
+
+test("parseBudget converts a typed number and its unit", () => {
+  assert.equal(parseBudget(100, "kb"), 100 * KB_);
+  assert.equal(parseBudget("100", "kb"), 100 * KB_);
+  assert.equal(parseBudget(1, "mb"), MB_);
+  assert.equal(parseBudget(0.5, "mb"), MB_ / 2);
+  assert.equal(parseBudget(2048, "b"), 2048);
+  assert.equal(parseBudget(100), 100 * KB_, "kilobytes is the default unit");
+});
+
+test("parseBudget rejects anything that is not a positive number", () => {
+  assert.equal(parseBudget("", "kb"), null);
+  assert.equal(parseBudget("abc", "kb"), null);
+  assert.equal(parseBudget(0, "kb"), null);
+  assert.equal(parseBudget(-5, "mb"), null);
+  assert.equal(parseBudget(NaN, "kb"), null);
+  assert.equal(parseBudget(Infinity, "kb"), null);
+  assert.equal(parseBudget(null, "kb"), null);
+});
+
+test("a budget the top quality already meets costs exactly one encode", async () => {
+  const encode = fakeEncoder({ atFull: 300 * KB_ });
+  const r = await targetQualitySearch(encode, 1 * MB_);
+  assert.equal(r.passes, 1, "no bisection is needed when the ceiling already fits");
+  assert.equal(r.quality, 0.95);
+  assert.equal(r.fits, true);
+  assert.equal(r.cancelled, false);
+});
+
+test("the search returns the highest quality that fits, and it really fits", async () => {
+  const calls = [];
+  const encode = fakeEncoder({ atFull: 4 * MB_, calls });
+  const target = 500 * KB_;
+  const r = await targetQualitySearch(encode, target);
+  assert.equal(r.fits, true);
+  assert.ok(r.size <= target, `settled on ${r.size} bytes, over the ${target} budget`);
+  // Nudging the quality up must break the budget — otherwise it was not the
+  // highest quality that fits.
+  assert.ok((await encode(Math.min(0.95, r.quality + 0.05))) > target);
+});
+
+test("the pass cap is a hard cap, because these are full-size encodes", async () => {
+  for (const maxPasses of [2, 3, 5, 8]) {
+    const calls = [];
+    const encode = fakeEncoder({ atFull: 4 * MB_, calls });
+    const r = await targetQualitySearch(encode, 400 * KB_, { maxPasses });
+    assert.ok(r.passes <= maxPasses, `${r.passes} passes with a cap of ${maxPasses}`);
+    assert.equal(calls.length, r.passes, "reported passes must match encodes actually run");
+  }
+});
+
+test("the default search never runs more than eight encodes", async () => {
+  const calls = [];
+  // A pathological encoder whose size barely moves with quality: the worst case
+  // for bisection, and exactly where an uncapped loop would spin.
+  const encode = async (q) => { calls.push(q); return Math.round(900 * KB_ - q * 1024); };
+  const r = await targetQualitySearch(encode, 899 * KB_);
+  assert.ok(calls.length <= 8, `ran ${calls.length} encodes`);
+  assert.equal(r.passes, calls.length);
+});
+
+test("a budget nothing can reach is reported, not bisected towards forever", async () => {
+  const calls = [];
+  const encode = fakeEncoder({ atFull: 8 * MB_, floor: 0.5, calls });
+  const r = await targetQualitySearch(encode, 100 * KB_);
+  assert.equal(r.fits, false, "quality alone cannot get there");
+  assert.equal(calls.length, 2, "the ceiling and the floor answer this in two encodes");
+  assert.ok(r.size > 100 * KB_);
+  assert.ok(r.quality >= 0.05, "reports the quality of the smallest it managed");
+});
+
+test("a cancelled run stops encoding and says it was cancelled", async () => {
+  const calls = [];
+  let cancel = false;
+  const encode = fakeEncoder({ atFull: 4 * MB_, calls });
+  const r = await targetQualitySearch(encode, 400 * KB_, {
+    // Let the ceiling and floor probes through, then pull the plug.
+    shouldCancel: () => { const c = cancel; cancel = calls.length >= 2; return c; },
+  });
+  assert.equal(r.cancelled, true);
+  assert.ok(calls.length <= 3, `kept encoding after cancellation: ${calls.length} encodes`);
+});
+
+test("cancelling before the first encode runs no encodes at all", async () => {
+  const calls = [];
+  const encode = fakeEncoder({ calls });
+  const r = await targetQualitySearch(encode, 400 * KB_, { shouldCancel: () => true });
+  assert.equal(calls.length, 0);
+  assert.equal(r.cancelled, true);
+});
+
+test("the search stays inside the quality bounds it was given", async () => {
+  const calls = [];
+  const encode = fakeEncoder({ atFull: 4 * MB_, calls });
+  await targetQualitySearch(encode, 400 * KB_, { minQuality: 0.2, maxQuality: 0.8 });
+  calls.forEach((q) => {
+    assert.ok(q >= 0.2 && q <= 0.8, `asked for quality ${q}, outside 0.2-0.8`);
+  });
+});
+
+test("a nonsense budget is refused rather than searched", async () => {
+  await assert.rejects(() => targetQualitySearch(fakeEncoder(), 0), /positive number of bytes/);
+  await assert.rejects(() => targetQualitySearch(fakeEncoder(), -1), /positive number of bytes/);
+  await assert.rejects(() => targetQualitySearch(fakeEncoder(), NaN), /positive number of bytes/);
+  await assert.rejects(() => targetQualitySearch(null, 1000), /encode function/);
+});
+
+test("downscaleFactorForBudget shrinks by area, not by length", () => {
+  // Quartering the bytes should roughly halve each dimension.
+  const f = downscaleFactorForBudget(4 * MB_, MB_, 1);
+  assert.ok(Math.abs(f - 0.5) < 1e-9, `got ${f}`);
+  assert.equal(downscaleFactorForBudget(MB_, 4 * MB_), 1, "never upscales");
+  assert.equal(downscaleFactorForBudget(MB_, MB_), 1, "already fits");
+  assert.equal(downscaleFactorForBudget(0, MB_), 1);
+  assert.equal(downscaleFactorForBudget(MB_, 0), 1);
+});
+
+test("downscaleFactorForBudget aims under the budget and never collapses the image", () => {
+  assert.ok(downscaleFactorForBudget(4 * MB_, MB_) < 0.5, "the safety margin aims a little under");
+  assert.equal(downscaleFactorForBudget(100 * MB_, 1, 1), 0.1, "clamped to a tenth, not to zero");
+});
+
+test("PNG in target mode is switched to a lossy format, and says so", () => {
+  assert.deepEqual(targetFormatFor("png"), { format: "webp", switched: true });
+  assert.deepEqual(targetFormatFor("jpeg"), { format: "jpeg", switched: false });
+  assert.deepEqual(targetFormatFor("webp"), { format: "webp", switched: false });
+});
+
+test("describeTargetResult explains the answer rather than just stating it", () => {
+  assert.match(describeTargetResult({ quality: 0.72, size: 96 * KB_, passes: 5, fits: true }, 100 * KB_),
+    /96\.0 KB at quality 72% — found in 5 passes\./);
+  assert.match(describeTargetResult({ quality: 0.95, size: 40 * KB_, passes: 1, fits: true }, 100 * KB_),
+    /found in 1 pass\.$/, "singular for one pass");
+  assert.match(describeTargetResult({ quality: 0.05, size: 300 * KB_, passes: 2, fits: false }, 100 * KB_),
+    /Could not reach 100 KB by quality alone/);
+  assert.equal(describeTargetResult({ cancelled: true }, 100 * KB_), "Cancelled.");
+  assert.equal(describeTargetResult(null, 100 * KB_), "");
+});
+
+test("buildBatchSummaryText lists every file and totals them", () => {
+  const text = buildBatchSummaryText([
+    { name: "a.jpg", before: 2 * MB_, after: 500 * KB_ },
+    { name: "b.jpg", before: 1 * MB_, after: 250 * KB_ },
+  ]);
+  const lines = text.split("\n");
+  assert.equal(lines.length, 3);
+  assert.equal(lines[0], "a.jpg: 2.00 MB → 500 KB (76% smaller)");
+  assert.equal(lines[1], "b.jpg: 1.00 MB → 250 KB (76% smaller)");
+  assert.equal(lines[2], "Total: 2 images, 3.00 MB → 750 KB (76% smaller, 2.27 MB saved)");
+});
+
+test("buildBatchSummaryText ignores files that failed and handles an empty queue", () => {
+  assert.equal(buildBatchSummaryText([]), "");
+  assert.equal(buildBatchSummaryText(null), "");
+  assert.equal(buildBatchSummaryText([{ name: "x.jpg", before: 100, after: null }]), "");
+  const text = buildBatchSummaryText([
+    { name: "ok.jpg", before: 1000, after: 500 },
+    { name: "bad.jpg", before: 1000, after: undefined },
+  ]);
+  assert.equal(text.split("\n").length, 2, "one row plus the total");
+  assert.match(text, /Total: 1 image,/);
 });
