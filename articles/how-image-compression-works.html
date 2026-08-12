@@ -12,14 +12,54 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
   <div class="header-inner">
     <a class="brand" href="/" aria-label="photoshrink.net home">
       <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
     </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
   </div>
 </header>
-<main class="container-narrow">
+
+<!-- nav:start -->
+<nav class="toolbar" aria-label="Tools">
+  <details class="tb-menu">
+    <summary class="tb-trigger" aria-label="All 8 tools">
+      <span class="tb-glyph" aria-hidden="true">&#9636;</span>
+      <span class="tb-label">All 8<span class="tb-label-long"> tools</span></span>
+    </summary>
+    <div class="tb-sheet is-flat">
+      <ul>
+        <li><a href="/resize-image">Resize Image</a></li>
+        <li><a href="/compress-image">Compress Image</a></li>
+        <li><a href="/crop-image">Crop Image</a></li>
+        <li><a href="/convert-image">Convert Image Format</a></li>
+        <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
+        <li><a href="/image-to-base64">Image to Base64</a></li>
+        <li><a href="/favicon-generator">Favicon Generator</a></li>
+        <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
+      </ul>
+      <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
+    </div>
+  </details>
+  <div class="tb-scrim"></div>
+  <ul class="tb-rail">
+    <li><a href="/resize-image">Resize</a></li>
+    <li><a href="/compress-image">Compress</a></li>
+    <li><a href="/crop-image">Crop</a></li>
+    <li><a href="/convert-image">Convert</a></li>
+    <li><a href="/rotate-image">Rotate</a></li>
+    <li><a href="/image-to-base64">Base64</a></li>
+    <li><a href="/favicon-generator">Favicon</a></li>
+    <li><a href="/exif-viewer">Metadata</a></li>
+  </ul>
+</nav>
+<!-- nav:end -->
+<main id="main" class="container-narrow">
   <h1>How Image Compression Actually Works</h1>
 
   <p>Drag a quality slider from 100 down to 60 and a photo's file size might drop by half — but drag the same slider on a different image and barely anything changes. That's not random. Lossy compressors like JPEG and WebP exploit specific, predictable weaknesses in how human vision works, and understanding them makes the quality slider a lot less mysterious.</p>
@@ -60,5 +100,6 @@
 </footer>
 <a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
 <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+<script src="/assets/js/app.js"></script>
 </body>
 </html>
