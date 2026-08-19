@@ -71,6 +71,7 @@
         </ul>
         <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
         <p class="tb-hub"><a href="/resize-image">All 20 platform sizes →</a></p>
+        <p class="tb-hub"><a href="/convert-image">All 6 format pairs →</a></p>
       </div>
     </div>
   </details>
@@ -411,6 +412,20 @@
       <p class="dz-title">Drop images to convert</p>
       <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to process a whole batch</p>
     </div>
+    <!-- formatchips:start -->
+    <nav class="size-chips" aria-label="Image format pairs">
+      <span class="size-chips-label" id="formatchips-label">Format pair</span>
+      <ul aria-labelledby="formatchips-label">
+        <li><a href="/convert-image" class="chip" data-from="" data-to="">Any format</a></li>
+        <li><a href="/png-to-jpg" class="chip" data-from="png" data-to="jpeg">PNG → JPG</a></li>
+        <li><a href="/jpg-to-png" class="chip" data-from="jpeg" data-to="png">JPG → PNG</a></li>
+        <li><a href="/webp-to-jpg" class="chip" data-from="webp" data-to="jpeg">WebP → JPG</a></li>
+        <li><a href="/webp-to-png" class="chip" data-from="webp" data-to="png">WebP → PNG</a></li>
+        <li><a href="/png-to-webp" class="chip" data-from="png" data-to="webp">PNG → WebP</a></li>
+        <li><a href="/jpg-to-webp" class="chip" data-from="jpeg" data-to="webp">JPG → WebP</a></li>
+      </ul>
+    </nav>
+    <!-- formatchips:end -->
     <div class="workspace" id="convert-workspace" hidden>
       <div class="panel">
         <div class="file-name-row"><span class="fname" id="convert-fname"></span><button class="ghost change-file-btn" type="button" id="convert-change">Change image</button></div>
@@ -429,6 +444,7 @@
           </select>
         </div>
         <p class="dz-sub" id="convert-bg-note" hidden style="text-align:left;margin:-6px 0 14px;">JPEG doesn't support transparency — see-through areas will be filled white.</p>
+        <p class="dz-sub" id="convert-from-note" hidden style="text-align:left;margin:-6px 0 14px;"></p>
         <div class="field" id="convert-quality-field" hidden>
           <div class="range-label"><span>Quality</span><span id="convert-quality-value">85%</span></div>
           <input type="range" id="convert-quality" min="1" max="100" value="85">

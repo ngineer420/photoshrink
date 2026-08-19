@@ -110,12 +110,20 @@ def families():
 
 
 def owned_urls(tool_href):
-    """Tier-2 URLs that belong to this tier-1 tool, across every family."""
+    """Tier-2 URLs that belong to this tier-1 tool, across every family.
+
+    `owns` is an optional extra list of URLs that belong to the family without
+    appearing in its chip row — a spelling alias that carries rel=canonical to
+    one of the chips, say, which should still light the parent tool in the rail
+    but must not compete with its own canonical for a slot. A family that does
+    not declare it produces byte-identical output.
+    """
     owned = []
     for fam in families():
         if canon(fam.get("parent", "")) != canon(tool_href):
             continue
         owned.extend(canon(i["href"]) for i in fam["items"])
+        owned.extend(canon(u) for u in fam.get("owns", ()))
     return tuple(owned)
 
 

@@ -71,6 +71,7 @@
         </ul>
         <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
         <p class="tb-hub"><a href="/resize-image">All 20 platform sizes →</a></p>
+        <p class="tb-hub"><a href="/convert-image" aria-current="page">All 6 format pairs →</a></p>
       </div>
     </div>
   </details>
@@ -106,6 +107,20 @@
       <p class="dz-title">Drop images to convert</p>
       <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to process a whole batch</p>
     </div>
+    <!-- formatchips:start -->
+    <nav class="size-chips" aria-label="Image format pairs">
+      <span class="size-chips-label" id="formatchips-label">Format pair</span>
+      <ul aria-labelledby="formatchips-label">
+        <li><a href="/convert-image" class="chip" data-from="" data-to="" aria-current="page">Any format</a></li>
+        <li><a href="/png-to-jpg" class="chip" data-from="png" data-to="jpeg">PNG → JPG</a></li>
+        <li><a href="/jpg-to-png" class="chip" data-from="jpeg" data-to="png">JPG → PNG</a></li>
+        <li><a href="/webp-to-jpg" class="chip" data-from="webp" data-to="jpeg">WebP → JPG</a></li>
+        <li><a href="/webp-to-png" class="chip" data-from="webp" data-to="png">WebP → PNG</a></li>
+        <li><a href="/png-to-webp" class="chip" data-from="png" data-to="webp">PNG → WebP</a></li>
+        <li><a href="/jpg-to-webp" class="chip" data-from="jpeg" data-to="webp">JPG → WebP</a></li>
+      </ul>
+    </nav>
+    <!-- formatchips:end -->
     <div class="workspace" id="convert-workspace" hidden>
       <div class="panel">
         <div class="file-name-row"><span class="fname" id="convert-fname"></span><button class="ghost change-file-btn" type="button" id="convert-change">Change image</button></div>
@@ -124,6 +139,7 @@
           </select>
         </div>
         <p class="dz-sub" id="convert-bg-note" hidden style="text-align:left;margin:-6px 0 14px;">JPEG doesn't support transparency — see-through areas will be filled white.</p>
+        <p class="dz-sub" id="convert-from-note" hidden style="text-align:left;margin:-6px 0 14px;"></p>
         <div class="field" id="convert-quality-field" hidden>
           <div class="range-label"><span>Quality</span><span id="convert-quality-value">85%</span></div>
           <input type="range" id="convert-quality" min="1" max="100" value="85">
@@ -175,6 +191,19 @@
       <h3>Can I convert and resize at the same time?</h3>
       <p>This tool only changes format. Use the <a href="/resize-image">resizer</a> first (it also has a format option) if you want both in one pass.</p>
     </div>
+    <h2>Convert between two specific formats</h2>
+    <p>One page per pair, each opening this converter with the output format already set. They are not the same conversion under different names — PNG to JPG is a question about a white background, JPG to PNG is a question about why the file got bigger, and the WebP pages exist because software still refuses to open the file.</p>
+    <!-- convertlist:start -->
+    <ul>
+      <li><a href="/png-to-jpg">PNG to JPG</a> — Shrink a screenshot or export for anywhere that will not take a PNG.</li>
+      <li><a href="/jpg-to-png">JPG to PNG</a> — Get a lossless copy to edit, or a format that accepts transparency.</li>
+      <li><a href="/webp-to-jpg">WebP to JPG</a> — Open a downloaded WebP in software that has never heard of it.</li>
+      <li><a href="/webp-to-png">WebP to PNG</a> — Keep the transparency a WebP carries, in a format everything reads.</li>
+      <li><a href="/png-to-webp">PNG to WebP</a> — Cut the weight of a PNG for the web without losing the alpha channel.</li>
+      <li><a href="/jpg-to-webp">JPG to WebP</a> — Smaller photographs for a page, at the same visible quality.</li>
+    </ul>
+<!-- convertlist:end -->
+
     <h2>More image tools</h2>
     <ul>
       <li><a href="/compress-image">Image Compressor</a></li>

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>PNG to WebP Converter — Free, No Upload | PhotoShrink</title>
+<meta name="description" content="Convert PNG to WebP in your browser. The converter below opens with WebP already selected, nothing is uploaded, and batches of files work too.">
+<link rel="canonical" href="https://photoshrink.net/png-to-webp">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="PNG to WebP Converter — Free, No Upload">
+<meta property="og:description" content="Convert PNG to WebP in your browser. The converter below opens with WebP already selected, nothing is uploaded, and batches of files work too.">
+<meta property="og:url" content="https://photoshrink.net/png-to-webp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PNG to WebP Converter — Free, No Upload">
+<meta name="twitter:description" content="Convert PNG to WebP in your browser. The converter below opens with WebP already selected, nothing is uploaded, and batches of files work too.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "PNG to WebP Converter",
+  "url": "https://photoshrink.net/png-to-webp",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Convert PNG to WebP in your browser. The converter below opens with WebP already selected, nothing is uploaded, and batches of files work too."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Does WebP keep the transparency from my PNG?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. WebP stores a real per-pixel alpha channel, exactly as PNG does, so soft edges and cut-outs come through unchanged. This is the reason to choose WebP over JPEG for a transparent PNG: JPEG has no alpha channel, so converting there fills every transparent pixel with white and there is no setting that avoids it."}},
+    {"@type": "Question", "name": "Is the WebP this produces lossless?", "acceptedAnswer": {"@type": "Answer", "text": "No. It uses the browser's canvas encoder, which writes lossy WebP at the quality you set on the slider. WebP does have a lossless mode, and it is genuinely excellent on screenshots and flat graphics, but no browser exposes it through the canvas API — so a lossless WebP needs a command-line tool such as cwebp. At quality 90 the lossy result is visually identical for almost anything photographic."}},
+    {"@type": "Question", "name": "Is it safe to use WebP on a live site?", "acceptedAnswer": {"@type": "Answer", "text": "Yes for a normal audience. Chrome, Edge, Firefox, Opera and Safari have all supported it since Safari 14 shipped in 2020, which covers the overwhelming majority of real traffic. If you must serve something older, use a &amp;lt;picture&amp;gt; element with a JPEG or PNG fallback rather than skipping WebP altogether — the browsers that understand WebP will take it and the rest will take the fallback."}}
+  ]
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body data-convert-from="png" data-convert-to="webp">
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<!-- nav:start -->
+<nav class="toolbar" aria-label="Tools">
+  <details class="tb-menu">
+    <summary class="tb-trigger" aria-label="All 8 tools">
+      <span class="tb-glyph" aria-hidden="true">&#9636;</span>
+      <span class="tb-label">All 8<span class="tb-label-long"> tools</span></span>
+    </summary>
+    <div class="tb-sheet is-flat">
+      <div class="tb-sheet-cols">
+        <ul>
+          <li><a href="/resize-image">Resize Image</a></li>
+          <li><a href="/compress-image">Compress Image</a></li>
+          <li><a href="/crop-image">Crop Image</a></li>
+          <li><a href="/convert-image" aria-current="true">Convert Image Format</a></li>
+          <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
+          <li><a href="/image-to-base64">Image to Base64</a></li>
+          <li><a href="/favicon-generator">Favicon Generator</a></li>
+          <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
+        </ul>
+        <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
+        <p class="tb-hub"><a href="/resize-image">All 20 platform sizes →</a></p>
+        <p class="tb-hub"><a href="/convert-image">All 6 format pairs →</a></p>
+      </div>
+    </div>
+  </details>
+  <div class="tb-scrim"></div>
+  <ul class="tb-rail">
+    <li><a href="/resize-image">Resize</a></li>
+    <li><a href="/compress-image">Compress</a></li>
+    <li><a href="/crop-image">Crop</a></li>
+    <li><a href="/convert-image" aria-current="true">Convert</a></li>
+    <li><a href="/rotate-image">Rotate</a></li>
+    <li><a href="/image-to-base64">Base64</a></li>
+    <li><a href="/favicon-generator">Favicon</a></li>
+    <li><a href="/exif-viewer">Metadata</a></li>
+  </ul>
+</nav>
+<!-- nav:end -->
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side &middot; nothing uploaded</span>
+    <h1>Convert <span class="hl">PNG to WebP</span></h1>
+    <p class="sub">Turn a PNG into a WebP in your browser — much smaller for the web, and unlike JPEG it keeps the transparency.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <section id="panel-convert" class="tool-panel tab-panel active" data-prefix="convert">
+    <div class="dropzone" id="convert-drop">
+      <input type="file" id="convert-file" accept="image/*" multiple aria-label="Choose an image to convert">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop images to convert</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to process a whole batch</p>
+    </div>
+    <!-- formatchips:start -->
+    <nav class="size-chips" aria-label="Image format pairs">
+      <span class="size-chips-label" id="formatchips-label">Format pair</span>
+      <ul aria-labelledby="formatchips-label">
+        <li><a href="/convert-image" class="chip" data-from="" data-to="">Any format</a></li>
+        <li><a href="/png-to-jpg" class="chip" data-from="png" data-to="jpeg">PNG → JPG</a></li>
+        <li><a href="/jpg-to-png" class="chip" data-from="jpeg" data-to="png">JPG → PNG</a></li>
+        <li><a href="/webp-to-jpg" class="chip" data-from="webp" data-to="jpeg">WebP → JPG</a></li>
+        <li><a href="/webp-to-png" class="chip" data-from="webp" data-to="png">WebP → PNG</a></li>
+        <li><a href="/png-to-webp" class="chip" data-from="png" data-to="webp" aria-current="page">PNG → WebP</a></li>
+        <li><a href="/jpg-to-webp" class="chip" data-from="jpeg" data-to="webp">JPG → WebP</a></li>
+      </ul>
+    </nav>
+    <!-- formatchips:end -->
+    <div class="workspace" id="convert-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="convert-fname"></span><button class="ghost change-file-btn" type="button" id="convert-change">Change image</button></div>
+        <h2>Preview</h2>
+        <div class="preview-stage"><canvas id="convert-canvas"></canvas></div>
+        <div class="meta-row" id="convert-meta"></div>
+      </div>
+      <div class="panel">
+        <h2>Convert settings</h2>
+        <div class="field">
+          <label for="convert-format">Convert to</label>
+          <select id="convert-format">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+        <p class="dz-sub" id="convert-bg-note" hidden style="text-align:left;margin:-6px 0 14px;">JPEG doesn't support transparency — see-through areas will be filled white.</p>
+        <p class="dz-sub" id="convert-from-note" hidden style="text-align:left;margin:-6px 0 14px;"></p>
+        <div class="field" id="convert-quality-field" hidden>
+          <div class="range-label"><span>Quality</span><span id="convert-quality-value">85%</span></div>
+          <input type="range" id="convert-quality" min="1" max="100" value="85">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="convert-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download converted image
+          </button>
+        </div>
+        <div class="batch" id="convert-batch" hidden>
+          <div class="batch-head">
+            <h3>Batch queue <span class="batch-count" id="convert-batch-count"></span></h3>
+            <button type="button" class="ghost" id="convert-batch-clear">Clear</button>
+          </div>
+          <ul class="batch-list" id="convert-batch-list"></ul>
+          <div class="batch-bar"><span id="convert-batch-bar"></span></div>
+          <div class="btn-row">
+            <button type="button" class="primary" id="convert-batch-run">Process all</button>
+            <button type="button" class="ghost" id="convert-batch-zip" disabled>Download ZIP</button>
+          </div>
+          <p class="batch-summary" id="convert-batch-summary" role="status"></p>
+        </div>
+        <div class="error-banner" id="convert-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">PNG to WebP at a glance</h2>
+    <ul>
+      <li><strong>Converts:</strong> PNG to WebP</li>
+      <li><strong>Compression:</strong> Lossless in, lossy out — this is the browser's lossy WebP encoder</li>
+      <li><strong>Transparency:</strong> Kept — WebP has a real alpha channel</li>
+      <li><strong>Typical result:</strong> A quarter to a half the size of the PNG at quality 85</li>
+      <li><strong>Where it runs:</strong> Entirely in your browser — the file is never uploaded</li>
+    </ul>
+
+    <h2>The format that finally replaces the PNG on a web page</h2>
+    <p>For years the choice for a web image was a bad one: JPEG if it was a photograph and you did not need transparency, PNG if you did and you could live with the file size. WebP is the format that stopped forcing that choice. It compresses photographic content roughly as well as JPEG, it handles flat colour and hard edges far better than JPEG does, and it carries a full alpha channel, so a logo with a soft shadow can be small <em>and</em> transparent.</p>
+    <p>That last part is what makes this the right conversion for most PNGs headed for a website. A PNG with transparency has no small equivalent in JPEG — converting it there would fill the transparent pixels with white and ruin it — so before WebP the only option was to ship the large PNG. Here you keep the alpha and typically lose half to three quarters of the file size.</p>
+    <p>Be clear about what kind of WebP this produces. The conversion runs through the browser's canvas encoder, which writes <em>lossy</em> WebP at the quality you choose on the slider. Lossless WebP is a different mode of the format, and no browser exposes it through a canvas, so it is not something this tool can offer. At quality 90 the result is visually indistinguishable from the PNG for almost any photograph; for a screenshot with small text, compare them at 100% before you commit.</p>
+    <p>Support is no longer a reason to hesitate: every current browser reads WebP, and has since Safari 14 in 2020. The one thing to keep in mind is that WebP is a format for the web, not for handing to other people — plenty of desktop software still refuses it, which is exactly why <a href="/webp-to-jpg">the reverse conversion</a> is one of the most-used pages on this site. Everything runs locally and nothing is uploaded.</p>
+
+    <h2>How to convert PNG to WebP</h2>
+    <ol>
+      <li>Drop your PNG on the panel above &mdash; or paste it, or drop several at once to do a batch.</li>
+      <li>The output format is already set to WebP, and it stays set: dropping a file does not change it back.</li>
+      <li>Set the quality slider &mdash; 85 to 90 keeps the result visually identical.</li>
+      <li>Download the WebP, or run the batch and take a ZIP of the lot.</li>
+      <li>Nothing was uploaded at any point &mdash; the conversion ran on your own machine, in this tab.</li>
+    </ol>
+
+    <h2>Questions</h2>
+    <div class="faq-item">
+      <h3>Does WebP keep the transparency from my PNG?</h3>
+      <p>Yes. WebP stores a real per-pixel alpha channel, exactly as PNG does, so soft edges and cut-outs come through unchanged. This is the reason to choose WebP over JPEG for a transparent PNG: JPEG has no alpha channel, so converting there fills every transparent pixel with white and there is no setting that avoids it.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Is the WebP this produces lossless?</h3>
+      <p>No. It uses the browser's canvas encoder, which writes lossy WebP at the quality you set on the slider. WebP does have a lossless mode, and it is genuinely excellent on screenshots and flat graphics, but no browser exposes it through the canvas API — so a lossless WebP needs a command-line tool such as cwebp. At quality 90 the lossy result is visually identical for almost anything photographic.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Is it safe to use WebP on a live site?</h3>
+      <p>Yes for a normal audience. Chrome, Edge, Firefox, Opera and Safari have all supported it since Safari 14 shipped in 2020, which covers the overwhelming majority of real traffic. If you must serve something older, use a <code>&lt;picture&gt;</code> element with a JPEG or PNG fallback rather than skipping WebP altogether — the browsers that understand WebP will take it and the rest will take the fallback.</p>
+    </div>
+
+    <h2>Other conversions</h2>
+    <ul>
+      <li><a href="/jpg-to-webp">JPG to WebP</a> — Smaller photographs for a page, at the same visible quality.</li>
+      <li><a href="/png-to-jpg">PNG to JPG</a> — Shrink a screenshot or export for anywhere that will not take a PNG.</li>
+      <li><a href="/webp-to-png">WebP to PNG</a> — Keep the transparency a WebP carries, in a format everything reads.</li>
+      <li><a href="/convert-image">Convert to any format</a> &mdash; the full converter, with every pair.</li>
+      <li><a href="/articles/jpeg-vs-png-vs-webp.html">JPEG vs PNG vs WebP</a> &mdash; which format to reach for, and why.</li>
+    </ul>
+  </section>
+  </main>
+
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

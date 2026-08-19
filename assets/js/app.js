@@ -41,6 +41,14 @@ function mimeForFormat(format) {
   }
 }
 
+// How a format is written in prose, which is not the value the select carries:
+// the value is "jpeg" and the word is "JPG".
+const FORMAT_LABELS = { png: "PNG", jpeg: "JPG", jpg: "JPG", webp: "WebP" };
+
+function formatLabel(format) {
+  return FORMAT_LABELS[format] || String(format || "").toUpperCase();
+}
+
 function extensionForFormat(format) {
   switch (format) {
     case "png": return "png";
@@ -2304,6 +2312,42 @@ if (typeof document !== "undefined") {
       const qualityInput = $("convert-quality");
       const qualityValue = $("convert-quality-value");
       const downloadBtn = $("convert-download");
+      const fromNote = $("convert-from-note");
+      const panel = workspace.closest(".tool-panel");
+      // Scoped to this panel: the homepage mounts three chip rows and a
+      // document-wide lookup takes whichever is first in the DOM.
+      const formatChips = panel ? panel.querySelector(".size-chips") : null;
+
+      /* A format-pair page seeds itself from two body attributes, the same
+         one-attribute mechanism the resizer's platform pages use — no query
+         string, so the canonical URL stays clean. `seedTo` also GATES the
+         dropzone's auto-guess below; without that, /png-to-webp flips itself
+         to JPEG the moment a file lands, which is the one interaction the
+         page exists for. Both are `let` because the chip row swaps them in
+         place rather than reloading. */
+      let seedFrom = document.body.getAttribute("data-convert-from") || "";
+      let seedTo = document.body.getAttribute("data-convert-to") || "";
+      if (seedTo && [...formatSelect.options].some((o) => o.value === seedTo)) {
+        formatSelect.value = seedTo;
+      } else {
+        seedTo = "";
+      }
+
+      /* A pair page names the format it expects. Saying so when a different
+         one arrives is more useful than silently converting it, and it is not
+         an error: the conversion still runs. */
+      function updateFromNote() {
+        if (!fromNote) return;
+        const expected = seedFrom ? mimeForFormat(seedFrom) : "";
+        const actual = current && current.type;
+        const mismatch = !!(expected && actual && actual !== expected);
+        fromNote.hidden = !mismatch;
+        if (mismatch) {
+          fromNote.textContent = "That file is a " + formatLabel(actual.replace("image/", ""))
+            + ", not a " + formatLabel(seedFrom) + " — converting it to "
+            + formatLabel(formatSelect.value) + " anyway.";
+        }
+      }
 
       let current = null;
 
@@ -2326,8 +2370,8 @@ if (typeof document !== "undefined") {
         const blob = await canvasToBlob(canvas, mimeForFormat(fmt), quality);
         if (!blob) return;
         setMeta(meta, [
-          ["From", current.type.replace("image/", "").toUpperCase()],
-          ["To", fmt.toUpperCase()],
+          ["From", formatLabel(current.type.replace("image/", ""))],
+          ["To", formatLabel(fmt)],
           ["New size", formatBytes(blob.size)],
         ]);
         downloadBtn.disabled = false;
@@ -2371,7 +2415,14 @@ if (typeof document !== "undefined") {
             const loaded = await loadImageFromFile(file);
             current = loaded;
             fname.textContent = `${loaded.name} · ${loaded.width}×${loaded.height}px · ${formatBytes(loaded.size)}`;
-            formatSelect.value = current.type === "image/jpeg" ? "png" : "jpeg";
+            /* The guess is a convenience on the generic page and a bug on a
+               pair page, so a seeded target wins over it. It also means a
+               manual choice survives dropping a second file, which is what
+               anyone would expect. */
+            if (!seedTo) {
+              formatSelect.value = current.type === "image/jpeg" ? "png" : "jpeg";
+            }
+            updateFromNote();
             workspace.hidden = false;
             workspace.closest(".tool-panel").classList.add("has-image");
             render();
@@ -2384,9 +2435,36 @@ if (typeof document !== "undefined") {
 
       $("convert-change").addEventListener("click", () => $("convert-file").click());
       formatSelect.addEventListener("change", () => {
+        updateFromNote();
         render();
         if (batch) batch.invalidate();
       });
+
+      /* The pair pages are siblings of this control, not peers of the eight
+         tools, so they live here as real links. A plain click swaps the seed
+         in place — reloading would throw away the image already loaded — and
+         replaceState keeps the URL and the announced identity in step without
+         stacking a history entry per chip. With JS off the link simply
+         navigates and the destination seeds itself from its own body tag. */
+      if (formatChips) {
+        formatChips.addEventListener("click", (e) => {
+          const link = e.target.closest("a[data-to]");
+          if (!link || e.defaultPrevented) return;
+          if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          seedFrom = link.getAttribute("data-from") || "";
+          seedTo = link.getAttribute("data-to") || "";
+          if (seedTo) formatSelect.value = seedTo;
+          Array.from(formatChips.querySelectorAll("a[data-to]")).forEach((el) => {
+            if (el === link) el.setAttribute("aria-current", "page");
+            else el.removeAttribute("aria-current");
+          });
+          history.replaceState(history.state, "", link.getAttribute("href"));
+          updateFromNote();
+          render();
+          if (batch) batch.invalidate();
+        });
+      }
       qualityInput.addEventListener("input", () => {
         qualityValue.textContent = qualityInput.value + "%";
         render();
