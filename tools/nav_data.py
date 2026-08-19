@@ -11,10 +11,14 @@ the bottom of the sheet plus real <a href> sibling chips inside the tool's own
 control panel, where it is a parameter and not a peer.
 """
 
-# Noun used in the menu trigger: "All 8 tools".
+# Noun used in the menu trigger: "All 10 tools".
 NOUN = "tools"
 
-# Tier-1 tools, in rail order (rail is capped at 8 — this site has exactly 8).
+# Tier-1 tools, in rail order. The rail is capped at 8 and this site now has 10,
+# so the last two are sheet-only: the rail is measured traffic, and a page
+# published today has no impressions to have earned a slot with. Crossing 8 also
+# switches the sheet from one flat list to named groups — the renderer's rule,
+# not a per-site choice — which is why GROUPS below stops being decorative.
 #   label -> rail chip text, <= 18 chars
 #   long  -> anchor text in the sheet and in any footer/in-body list
 #   group -> sheet grouping key, only used once a site passes 8 destinations
@@ -27,15 +31,18 @@ TOOLS = [
     {"href": "/image-to-base64",   "label": "Base64",   "long": "Image to Base64",        "group": "convert", "tier": 1},
     {"href": "/favicon-generator", "label": "Favicon",  "long": "Favicon Generator",      "group": "convert", "tier": 1},
     {"href": "/exif-viewer",       "label": "Metadata", "long": "EXIF & Metadata Viewer", "group": "inspect", "tier": 1},
+    # --- past the rail cap: sheet only ---
+    {"href": "/redact-screenshot", "label": "Redact",   "long": "Redact a Screenshot",    "group": "inspect", "tier": 1},
+    {"href": "/blur-image",        "label": "Blur",     "long": "Blur an Image",          "group": "inspect", "tier": 1},
 ]
 
-# Sheet groups, in order. Unused at <= 8 destinations (the sheet renders flat,
-# because group headings are noise at that size) — kept so the arrangement is
-# already decided the day this site gains a ninth tool.
+# Sheet groups, in order. These went live the day this site gained a ninth tool:
+# at 9+ destinations the renderer swaps the flat list for named groups, and the
+# arrangement below is the one that was already decided for exactly that day.
 GROUPS = [
     ("size",    "Resize & compress"),
     ("convert", "Convert & export"),
-    ("inspect", "Inspect"),
+    ("inspect", "Inspect & redact"),
 ]
 
 # ---------------------------------------------------------------------------
