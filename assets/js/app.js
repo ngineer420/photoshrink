@@ -249,6 +249,94 @@ function resizeByDimension(origW, origH, width, height, lockAspect, changed) {
   return { width: w, height: h };
 }
 
+/* ========================== platform size presets ==========================
+
+   The dimensions people actually search for: "youtube thumbnail size", not
+   "resize image". Each preset seeds the resizer's width and height, and each
+   one has a page of its own at /<slug>.
+
+   THIS TABLE IS GENERATED. The numbers live in tools/nav_data.py, which is
+   also what writes the pages and the chip row, so a chip, a page heading and
+   the seeded input can never disagree. Edit them there and run
+   `python3 tools/build_size_pages.py`. */
+
+/* presets:start */
+const PRESETS = [
+  { slug: "instagram-post-size", label: "Instagram post", width: 1080, height: 1080, note: "The square feed post — Instagram's safest default." },
+  { slug: "instagram-story-size", label: "Instagram story", width: 1080, height: 1920, note: "Full-screen vertical, with UI over the top and bottom." },
+  { slug: "instagram-reel-size", label: "Instagram reel", width: 1080, height: 1920, note: "Vertical video cover; the grid crops it to a 4:5 centre." },
+  { slug: "instagram-profile-picture-size", label: "Instagram profile picture", width: 320, height: 320, note: "Stored at 320px square, displayed far smaller and circular." },
+  { slug: "youtube-thumbnail-size", label: "YouTube thumbnail", width: 1280, height: 720, note: "16:9 custom thumbnail, under YouTube's 2 MB cap." },
+  { slug: "youtube-banner-size", label: "YouTube channel banner", width: 2560, height: 1440, note: "Channel art, with a 1546×423 area safe on every device." },
+  { slug: "twitter-header-size", label: "X (Twitter) header", width: 1500, height: 500, note: "The 3:1 profile banner, part-covered by the avatar." },
+  { slug: "twitter-post-image-size", label: "X (Twitter) post image", width: 1600, height: 900, note: "16:9 in-timeline image, cropped to ~2:1 in the feed." },
+  { slug: "facebook-cover-photo-size", label: "Facebook cover photo", width: 851, height: 315, note: "Desktop cover; mobile crops the sides off this." },
+  { slug: "facebook-post-image-size", label: "Facebook post image", width: 1200, height: 630, note: "The 1.91:1 link and post image, same as an OG image." },
+  { slug: "linkedin-banner-size", label: "LinkedIn banner", width: 1584, height: 396, note: "The 4:1 profile cover, with the avatar over the left." },
+  { slug: "linkedin-post-image-size", label: "LinkedIn post image", width: 1200, height: 627, note: "Feed image at 1.91:1 — the shape LinkedIn shares with OG." },
+  { slug: "tiktok-video-size", label: "TikTok video", width: 1080, height: 1920, note: "9:16 full screen; captions and buttons cover the edges." },
+  { slug: "pinterest-pin-size", label: "Pinterest pin", width: 1000, height: 1500, note: "The 2:3 standard pin — taller pins get truncated." },
+  { slug: "discord-banner-size", label: "Discord banner", width: 960, height: 540, note: "16:9 profile banner, shown behind the avatar." },
+  { slug: "discord-server-icon-size", label: "Discord server icon", width: 512, height: 512, note: "Square server icon, masked to a circle in the list." },
+  { slug: "twitch-offline-banner-size", label: "Twitch offline banner", width: 1920, height: 1080, note: "What sits in the player when the channel is not live." },
+  { slug: "twitch-profile-banner-size", label: "Twitch profile banner", width: 1200, height: 480, note: "The 5:2 strip across the top of the channel page." },
+  { slug: "zoom-virtual-background-size", label: "Zoom virtual background", width: 1920, height: 1080, note: "16:9 at 1080p — Zoom's own recommended background size." },
+  { slug: "spotify-playlist-cover-size", label: "Spotify playlist cover", width: 640, height: 640, note: "Square JPEG, 640px, under Spotify's 4 MB upload cap." },
+];
+/* presets:end */
+
+const PRESETS_BY_SLUG = PRESETS.reduce((map, p) => {
+  map[p.slug] = p;
+  return map;
+}, {});
+
+function presetBySlug(slug) {
+  if (typeof slug !== "string") return null;
+  return Object.prototype.hasOwnProperty.call(PRESETS_BY_SLUG, slug) ? PRESETS_BY_SLUG[slug] : null;
+}
+
+/* "1280x720" -> { width: 1280, height: 720 }.
+
+   The seeding path a preset page uses, and the one the chips use, are the same
+   string: two positive integers with an "x" between them. Anything else — a
+   percentage, a zero, a negative, a decimal — returns null rather than a
+   half-parsed size, because a silently wrong dimension is worse than none. */
+function parseDimensionSeed(value) {
+  if (typeof value !== "string") return null;
+  const m = /^\s*(\d+)\s*[x×]\s*(\d+)\s*$/i.exec(value);
+  if (!m) return null;
+  const width = Number(m[1]);
+  const height = Number(m[2]);
+  if (!width || !height) return null;
+  return { width, height };
+}
+
+// Greatest common divisor, for turning 1080×1920 into "9:16".
+function greatestCommonDivisor(a, b) {
+  let x = Math.abs(Math.round(a));
+  let y = Math.abs(Math.round(b));
+  while (y) {
+    const t = y;
+    y = x % y;
+    x = t;
+  }
+  return x;
+}
+
+/* The aspect ratio as people write it. 1280×720 is "16:9"; 851×315 reduces to
+   851:315, which is true and useless, so anything that will not reduce to
+   sensible two-digit-ish terms comes back as a decimal ratio instead. */
+function ratioLabel(width, height) {
+  const w = Math.round(Number(width) || 0);
+  const h = Math.round(Number(height) || 0);
+  if (w <= 0 || h <= 0) return "";
+  const g = greatestCommonDivisor(w, h) || 1;
+  const rw = w / g;
+  const rh = h / g;
+  if (rw <= 40 && rh <= 40) return rw + ":" + rh;
+  return (w / h).toFixed(2).replace(/\.?0+$/, "") + ":1";
+}
+
 /* ============================= rotate tool ============================= */
 
 function normalizeAngle(angle) {
@@ -774,6 +862,11 @@ if (typeof module !== "undefined" && module.exports) {
     buildBatchSummaryText,
     resizeByPercent,
     resizeByDimension,
+    PRESETS,
+    presetBySlug,
+    parseDimensionSeed,
+    greatestCommonDivisor,
+    ratioLabel,
     normalizeAngle,
     rotateDimensions,
     clampCropBox,
@@ -1438,6 +1531,13 @@ if (typeof document !== "undefined") {
     const yearEl = $("year");
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+    /* The cropper fills this in when it is mounted. A platform preset is an
+       exact pixel size, and the honest way to reach one without stretching is
+       to crop to its ratio first — so on a page carrying both tools, picking a
+       preset in the resizer sets the cropper to the matching shape. On a page
+       carrying only one of them it stays null and nothing happens. */
+    let applyCropRatio = null;
+
     /* ---- Resize tool ---- */
     (function resizeTool() {
       const workspace = $("resize-workspace");
@@ -1461,12 +1561,43 @@ if (typeof document !== "undefined") {
       const qualityInput = $("resize-quality");
       const qualityValue = $("resize-quality-value");
       const downloadBtn = $("resize-download");
+      const panel = workspace.closest(".tool-panel");
+      // Scoped to this panel: the homepage mounts the compressor's target-size
+      // chips too, and a document-wide lookup would find whichever came first.
+      const presetChips = panel ? panel.querySelector(".size-chips") : null;
 
       let current = null; // { img, width, height, size, type, name }
       let lastChanged = "width";
+      let preset = null;  // { width, height } while a platform size is picked
 
       function unit() {
         return unitPercent && unitPercent.getAttribute("aria-pressed") === "true" ? "percent" : "px";
+      }
+
+      /* Pick a platform size — from a chip, or from the page's own seed.
+
+         Both numbers are the point of a preset, so the aspect lock comes off:
+         left on, the height is recomputed from the source image and the
+         preset quietly becomes "the right width, some other height". The page
+         copy says the same thing in words — crop to the ratio first, then
+         resize to the exact pixels, or accept the stretch. */
+      function applyPreset(dims) {
+        preset = dims || null;
+        if (preset) {
+          setUnit("px");
+          widthInput.value = preset.width;
+          heightInput.value = preset.height;
+          lockCheckbox.checked = false;
+          if (applyCropRatio) {
+            applyCropRatio(preset.width / preset.height, ratioLabel(preset.width, preset.height));
+          }
+        } else if (current) {
+          widthInput.value = current.width;
+          heightInput.value = current.height;
+          lockCheckbox.checked = true;
+        }
+        lastChanged = "width";
+        rerender();
       }
 
       // Split out so the batch can apply the same rule to each image's own
@@ -1548,8 +1679,10 @@ if (typeof document !== "undefined") {
             const loaded = await loadImageFromFile(file);
             current = loaded;
             fname.textContent = `${loaded.name} · ${loaded.width}×${loaded.height}px · ${formatBytes(loaded.size)}`;
-            widthInput.value = loaded.width;
-            heightInput.value = loaded.height;
+            // A preset page has already said what size the visitor wants, so
+            // the image's own dimensions must not overwrite it on load.
+            widthInput.value = preset ? preset.width : loaded.width;
+            heightInput.value = preset ? preset.height : loaded.height;
             percentInput.value = 100;
             lastChanged = "width";
             workspace.hidden = false;
@@ -1588,6 +1721,35 @@ if (typeof document !== "undefined") {
         if (downloadBtn._blob) downloadBlob(downloadBtn._blob, downloadBtn._name);
       });
 
+      /* The platform size pages are siblings of this control, not peers of the
+         eight tools, so they live here as real links. A plain click swaps the
+         dimensions in place — reloading would throw away the image already
+         loaded — and replaceState keeps the URL and the announced identity in
+         step without stacking a history entry per chip. With JS off the link
+         simply navigates and the destination seeds itself from its own
+         data-resize-size. */
+      if (presetChips) {
+        presetChips.addEventListener("click", (e) => {
+          const link = e.target.closest("a[data-width]");
+          if (!link || e.defaultPrevented) return;
+          if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          applyPreset(parseDimensionSeed(
+            link.getAttribute("data-width") + "x" + link.getAttribute("data-height")
+          ));
+          Array.from(presetChips.querySelectorAll("a[data-width]")).forEach((el) => {
+            if (el === link) el.setAttribute("aria-current", "page");
+            else el.removeAttribute("aria-current");
+          });
+          history.replaceState(history.state, "", link.getAttribute("href"));
+        });
+      }
+
+      /* A platform size page pre-seeds the dimensions from the body tag — one
+         attribute rather than a query string, so /youtube-thumbnail-size opens
+         ready to go and the canonical URL stays clean. */
+      const seeded = parseDimensionSeed(document.body.getAttribute("data-resize-size") || "");
+      if (seeded) applyPreset(seeded);
     })();
 
     /* ---- Compress tool ---- */
@@ -1613,7 +1775,10 @@ if (typeof document !== "undefined") {
       const targetScale = $("compress-target-scale");
       const targetStatus = $("compress-target-status");
       const targetCancel = $("compress-target-cancel");
-      const sizeChips = document.querySelector(".size-chips");
+      // Scoped to this panel for the same reason the resizer's is: the
+      // homepage now mounts two chip rows, and a document-wide lookup takes
+      // whichever is first in the DOM.
+      const sizeChips = (workspace.closest(".tool-panel") || document).querySelector(".size-chips");
 
       const compare = createCompare("compress");
 
@@ -1970,6 +2135,7 @@ if (typeof document !== "undefined") {
       const errorEl = $("crop-error");
       const formatSelect = $("crop-format");
       const downloadBtn = $("crop-download");
+      const aspectGroup = $("crop-aspect-group");
       const aspectBtns = Array.from(document.querySelectorAll("#crop-aspect-group [data-ratio]"));
 
       let current = null;
@@ -2000,6 +2166,32 @@ if (typeof document !== "undefined") {
       aspectBtns.forEach((btn) => {
         btn.addEventListener("click", () => setRatio(Number(btn.dataset.ratio) || 0, btn));
       });
+
+      /* Called by the resizer when a platform preset is picked on a page that
+         mounts both tools. Most presets have no button here — 9:16, 2:3, 4:1 —
+         so rather than applying a ratio with nothing on screen showing it, an
+         extra button appears in the group carrying the ratio's own label. */
+      applyCropRatio = function (value, label) {
+        const r = Number(value) || 0;
+        if (!r || !aspectGroup) return;
+        const match = aspectBtns.find((b) => Math.abs((Number(b.dataset.ratio) || 0) - r) < 0.005);
+        if (match) {
+          setRatio(Number(match.dataset.ratio) || 0, match);
+          return;
+        }
+        let custom = $("crop-aspect-preset");
+        if (!custom) {
+          custom = document.createElement("button");
+          custom.type = "button";
+          custom.id = "crop-aspect-preset";
+          custom.addEventListener("click", () => setRatio(Number(custom.dataset.ratio) || 0, custom));
+          aspectGroup.appendChild(custom);
+          aspectBtns.push(custom);
+        }
+        custom.dataset.ratio = String(r);
+        custom.textContent = label || ratioLabel(Math.round(r * 1000), 1000);
+        setRatio(r, custom);
+      };
 
       function pointerPos(e) {
         const r = canvas.getBoundingClientRect();

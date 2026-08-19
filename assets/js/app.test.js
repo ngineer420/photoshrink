@@ -23,6 +23,11 @@ const {
   stripExtension,
   resizeByPercent,
   resizeByDimension,
+  PRESETS,
+  presetBySlug,
+  parseDimensionSeed,
+  greatestCommonDivisor,
+  ratioLabel,
   normalizeAngle,
   rotateDimensions,
   clampCropBox,
@@ -641,4 +646,84 @@ test("buildBatchSummaryText ignores files that failed and handles an empty queue
   ]);
   assert.equal(text.split("\n").length, 2, "one row plus the total");
   assert.match(text, /Total: 1 image,/);
+});
+
+/* ------------------------- platform size presets -------------------------- */
+
+test("every preset has a slug, a label, positive dimensions and a note", () => {
+  assert.ok(PRESETS.length >= 20, "the family should carry ~20 presets");
+  const slugs = new Set();
+  for (const p of PRESETS) {
+    assert.match(p.slug, /^[a-z0-9-]+-size$/, p.slug);
+    assert.ok(!slugs.has(p.slug), "duplicate slug: " + p.slug);
+    slugs.add(p.slug);
+    assert.ok(p.label && p.note, p.slug + " needs a label and a note");
+    assert.ok(Number.isInteger(p.width) && p.width > 0, p.slug + " width");
+    assert.ok(Number.isInteger(p.height) && p.height > 0, p.slug + " height");
+  }
+});
+
+test("presetBySlug finds a preset and refuses anything else", () => {
+  const yt = presetBySlug("youtube-thumbnail-size");
+  assert.equal(yt.width, 1280);
+  assert.equal(yt.height, 720);
+  assert.equal(presetBySlug("not-a-preset"), null);
+  // Not fooled by inherited object properties.
+  assert.equal(presetBySlug("toString"), null);
+  assert.equal(presetBySlug(undefined), null);
+});
+
+test("parseDimensionSeed reads the seeding string both tools use", () => {
+  assert.deepEqual(parseDimensionSeed("1280x720"), { width: 1280, height: 720 });
+  assert.deepEqual(parseDimensionSeed(" 1080 × 1920 "), { width: 1080, height: 1920 });
+  assert.deepEqual(parseDimensionSeed("1080X1080"), { width: 1080, height: 1080 });
+});
+
+test("parseDimensionSeed returns null rather than half a size", () => {
+  // The "Custom" chip carries empty attributes, which must clear the preset
+  // rather than seed a zero-pixel canvas.
+  assert.equal(parseDimensionSeed("x"), null);
+  assert.equal(parseDimensionSeed(""), null);
+  assert.equal(parseDimensionSeed("1280"), null);
+  assert.equal(parseDimensionSeed("0x720"), null);
+  assert.equal(parseDimensionSeed("-100x200"), null);
+  assert.equal(parseDimensionSeed("12.5x20"), null);
+  assert.equal(parseDimensionSeed("1280x720x2"), null);
+  assert.equal(parseDimensionSeed(null), null);
+  assert.equal(parseDimensionSeed(1280), null);
+});
+
+test("ratioLabel writes the ratio the way people say it", () => {
+  assert.equal(ratioLabel(1280, 720), "16:9");
+  assert.equal(ratioLabel(1080, 1080), "1:1");
+  assert.equal(ratioLabel(1080, 1920), "9:16");
+  assert.equal(ratioLabel(1000, 1500), "2:3");
+  assert.equal(ratioLabel(1584, 396), "4:1");
+  assert.equal(ratioLabel(1200, 480), "5:2");
+});
+
+test("ratioLabel falls back to a decimal when the reduction is useless", () => {
+  // 851:315 reduces to itself, which is true and tells nobody anything.
+  assert.equal(ratioLabel(851, 315), "2.7:1");
+  assert.equal(ratioLabel(1200, 627), "1.91:1");
+  assert.equal(ratioLabel(0, 100), "");
+  assert.equal(ratioLabel(100, 0), "");
+});
+
+test("greatestCommonDivisor", () => {
+  assert.equal(greatestCommonDivisor(1280, 720), 80);
+  assert.equal(greatestCommonDivisor(7, 13), 1);
+  assert.equal(greatestCommonDivisor(0, 5), 5);
+});
+
+test("a preset seeds the resizer to exactly its own numbers", () => {
+  // The resizer applies a preset with the aspect lock off, which is what makes
+  // both numbers survive: with the lock on, resizeByDimension recomputes the
+  // height from the source and the preset silently becomes a different size.
+  const p = presetBySlug("youtube-thumbnail-size");
+  const source = { w: 4032, h: 3024 }; // a 4:3 phone photo
+  const locked = resizeByDimension(source.w, source.h, p.width, p.height, true, "width");
+  assert.notEqual(locked.height, p.height);
+  const unlocked = resizeByDimension(source.w, source.h, p.width, p.height, false, "width");
+  assert.deepEqual(unlocked, { width: 1280, height: 720 });
 });
