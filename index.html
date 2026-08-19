@@ -58,17 +58,20 @@
       <span class="tb-label">All 8<span class="tb-label-long"> tools</span></span>
     </summary>
     <div class="tb-sheet is-flat">
-      <ul>
-        <li><a href="/resize-image">Resize Image</a></li>
-        <li><a href="/compress-image">Compress Image</a></li>
-        <li><a href="/crop-image">Crop Image</a></li>
-        <li><a href="/convert-image">Convert Image Format</a></li>
-        <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
-        <li><a href="/image-to-base64">Image to Base64</a></li>
-        <li><a href="/favicon-generator">Favicon Generator</a></li>
-        <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
-      </ul>
-      <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
+      <div class="tb-sheet-cols">
+        <ul>
+          <li><a href="/resize-image">Resize Image</a></li>
+          <li><a href="/compress-image">Compress Image</a></li>
+          <li><a href="/crop-image">Crop Image</a></li>
+          <li><a href="/convert-image">Convert Image Format</a></li>
+          <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
+          <li><a href="/image-to-base64">Image to Base64</a></li>
+          <li><a href="/favicon-generator">Favicon Generator</a></li>
+          <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
+        </ul>
+        <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
+        <p class="tb-hub"><a href="/resize-image">All 20 platform sizes →</a></p>
+      </div>
     </div>
   </details>
   <div class="tb-scrim"></div>
@@ -134,6 +137,34 @@
       <p class="dz-title">Drop images to resize</p>
       <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to process a whole batch</p>
     </div>
+    <!-- dimensionchips:start -->
+    <nav class="size-chips" aria-label="Platform image size presets">
+      <span class="size-chips-label" id="dimensionchips-label">Platform size</span>
+      <ul aria-labelledby="dimensionchips-label">
+        <li><a href="/resize-image" class="chip" data-width="" data-height="">Custom</a></li>
+        <li><a href="/instagram-post-size" class="chip" data-width="1080" data-height="1080">IG post</a></li>
+        <li><a href="/instagram-story-size" class="chip" data-width="1080" data-height="1920">IG story</a></li>
+        <li><a href="/instagram-reel-size" class="chip" data-width="1080" data-height="1920">IG reel</a></li>
+        <li><a href="/instagram-profile-picture-size" class="chip" data-width="320" data-height="320">IG profile</a></li>
+        <li><a href="/youtube-thumbnail-size" class="chip" data-width="1280" data-height="720">YT thumbnail</a></li>
+        <li><a href="/youtube-banner-size" class="chip" data-width="2560" data-height="1440">YT banner</a></li>
+        <li><a href="/twitter-header-size" class="chip" data-width="1500" data-height="500">X header</a></li>
+        <li><a href="/twitter-post-image-size" class="chip" data-width="1600" data-height="900">X post</a></li>
+        <li><a href="/facebook-cover-photo-size" class="chip" data-width="851" data-height="315">FB cover</a></li>
+        <li><a href="/facebook-post-image-size" class="chip" data-width="1200" data-height="630">FB post</a></li>
+        <li><a href="/linkedin-banner-size" class="chip" data-width="1584" data-height="396">LI banner</a></li>
+        <li><a href="/linkedin-post-image-size" class="chip" data-width="1200" data-height="627">LI post</a></li>
+        <li><a href="/tiktok-video-size" class="chip" data-width="1080" data-height="1920">TikTok</a></li>
+        <li><a href="/pinterest-pin-size" class="chip" data-width="1000" data-height="1500">Pin</a></li>
+        <li><a href="/discord-banner-size" class="chip" data-width="960" data-height="540">Discord banner</a></li>
+        <li><a href="/discord-server-icon-size" class="chip" data-width="512" data-height="512">Discord icon</a></li>
+        <li><a href="/twitch-offline-banner-size" class="chip" data-width="1920" data-height="1080">Twitch offline</a></li>
+        <li><a href="/twitch-profile-banner-size" class="chip" data-width="1200" data-height="480">Twitch banner</a></li>
+        <li><a href="/zoom-virtual-background-size" class="chip" data-width="1920" data-height="1080">Zoom background</a></li>
+        <li><a href="/spotify-playlist-cover-size" class="chip" data-width="640" data-height="640">Spotify cover</a></li>
+      </ul>
+    </nav>
+    <!-- dimensionchips:end -->
     <div class="workspace" id="resize-workspace" hidden>
       <div class="panel">
         <div class="file-name-row"><span class="fname" id="resize-fname"></span><button class="ghost change-file-btn" type="button" id="resize-change">Change image</button></div>

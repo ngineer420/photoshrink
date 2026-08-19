@@ -58,17 +58,20 @@
       <span class="tb-label">All 8<span class="tb-label-long"> tools</span></span>
     </summary>
     <div class="tb-sheet is-flat">
-      <ul>
-        <li><a href="/resize-image" aria-current="page">Resize Image</a></li>
-        <li><a href="/compress-image">Compress Image</a></li>
-        <li><a href="/crop-image">Crop Image</a></li>
-        <li><a href="/convert-image">Convert Image Format</a></li>
-        <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
-        <li><a href="/image-to-base64">Image to Base64</a></li>
-        <li><a href="/favicon-generator">Favicon Generator</a></li>
-        <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
-      </ul>
-      <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
+      <div class="tb-sheet-cols">
+        <ul>
+          <li><a href="/resize-image" aria-current="page">Resize Image</a></li>
+          <li><a href="/compress-image">Compress Image</a></li>
+          <li><a href="/crop-image">Crop Image</a></li>
+          <li><a href="/convert-image">Convert Image Format</a></li>
+          <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
+          <li><a href="/image-to-base64">Image to Base64</a></li>
+          <li><a href="/favicon-generator">Favicon Generator</a></li>
+          <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
+        </ul>
+        <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
+        <p class="tb-hub"><a href="/resize-image" aria-current="page">All 20 platform sizes →</a></p>
+      </div>
     </div>
   </details>
   <div class="tb-scrim"></div>
@@ -103,6 +106,34 @@
       <p class="dz-title">Drop images to resize</p>
       <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — drop several at once to process a whole batch</p>
     </div>
+    <!-- dimensionchips:start -->
+    <nav class="size-chips" aria-label="Platform image size presets">
+      <span class="size-chips-label" id="dimensionchips-label">Platform size</span>
+      <ul aria-labelledby="dimensionchips-label">
+        <li><a href="/resize-image" class="chip" data-width="" data-height="" aria-current="page">Custom</a></li>
+        <li><a href="/instagram-post-size" class="chip" data-width="1080" data-height="1080">IG post</a></li>
+        <li><a href="/instagram-story-size" class="chip" data-width="1080" data-height="1920">IG story</a></li>
+        <li><a href="/instagram-reel-size" class="chip" data-width="1080" data-height="1920">IG reel</a></li>
+        <li><a href="/instagram-profile-picture-size" class="chip" data-width="320" data-height="320">IG profile</a></li>
+        <li><a href="/youtube-thumbnail-size" class="chip" data-width="1280" data-height="720">YT thumbnail</a></li>
+        <li><a href="/youtube-banner-size" class="chip" data-width="2560" data-height="1440">YT banner</a></li>
+        <li><a href="/twitter-header-size" class="chip" data-width="1500" data-height="500">X header</a></li>
+        <li><a href="/twitter-post-image-size" class="chip" data-width="1600" data-height="900">X post</a></li>
+        <li><a href="/facebook-cover-photo-size" class="chip" data-width="851" data-height="315">FB cover</a></li>
+        <li><a href="/facebook-post-image-size" class="chip" data-width="1200" data-height="630">FB post</a></li>
+        <li><a href="/linkedin-banner-size" class="chip" data-width="1584" data-height="396">LI banner</a></li>
+        <li><a href="/linkedin-post-image-size" class="chip" data-width="1200" data-height="627">LI post</a></li>
+        <li><a href="/tiktok-video-size" class="chip" data-width="1080" data-height="1920">TikTok</a></li>
+        <li><a href="/pinterest-pin-size" class="chip" data-width="1000" data-height="1500">Pin</a></li>
+        <li><a href="/discord-banner-size" class="chip" data-width="960" data-height="540">Discord banner</a></li>
+        <li><a href="/discord-server-icon-size" class="chip" data-width="512" data-height="512">Discord icon</a></li>
+        <li><a href="/twitch-offline-banner-size" class="chip" data-width="1920" data-height="1080">Twitch offline</a></li>
+        <li><a href="/twitch-profile-banner-size" class="chip" data-width="1200" data-height="480">Twitch banner</a></li>
+        <li><a href="/zoom-virtual-background-size" class="chip" data-width="1920" data-height="1080">Zoom background</a></li>
+        <li><a href="/spotify-playlist-cover-size" class="chip" data-width="640" data-height="640">Spotify cover</a></li>
+      </ul>
+    </nav>
+    <!-- dimensionchips:end -->
     <div class="workspace" id="resize-workspace" hidden>
       <div class="panel">
         <div class="file-name-row"><span class="fname" id="resize-fname"></span><button class="ghost change-file-btn" type="button" id="resize-change">Change image</button></div>
@@ -198,6 +229,33 @@
       <h3>Which output format should I pick?</h3>
       <p>Keep the original unless you have a reason not to. Read our <a href="/articles/jpeg-vs-png-vs-webp.html">JPEG vs. PNG vs. WebP guide</a> if you're not sure — or use the <a href="/convert-image">converter</a> for a dedicated format-swap tool.</p>
     </div>
+    <h2>Platform image sizes</h2>
+    <p>The sizes people actually search for, each one a page that opens this resizer with the dimensions already filled in. Every number comes from the platform's own published recommendation — they drift, so the pages say what each one is for and where it gets cropped.</p>
+    <!-- sizelist:start -->
+    <ul>
+      <li><a href="/instagram-post-size">Instagram post size</a> — 1080 × 1080 px. The square feed post — Instagram's safest default.</li>
+      <li><a href="/instagram-story-size">Instagram story size</a> — 1080 × 1920 px. Full-screen vertical, with UI over the top and bottom.</li>
+      <li><a href="/instagram-reel-size">Instagram reel size</a> — 1080 × 1920 px. Vertical video cover; the grid crops it to a 4:5 centre.</li>
+      <li><a href="/instagram-profile-picture-size">Instagram profile picture size</a> — 320 × 320 px. Stored at 320px square, displayed far smaller and circular.</li>
+      <li><a href="/youtube-thumbnail-size">YouTube thumbnail size</a> — 1280 × 720 px. 16:9 custom thumbnail, under YouTube's 2 MB cap.</li>
+      <li><a href="/youtube-banner-size">YouTube channel banner size</a> — 2560 × 1440 px. Channel art, with a 1546×423 area safe on every device.</li>
+      <li><a href="/twitter-header-size">X (Twitter) header size</a> — 1500 × 500 px. The 3:1 profile banner, part-covered by the avatar.</li>
+      <li><a href="/twitter-post-image-size">X (Twitter) post image size</a> — 1600 × 900 px. 16:9 in-timeline image, cropped to ~2:1 in the feed.</li>
+      <li><a href="/facebook-cover-photo-size">Facebook cover photo size</a> — 851 × 315 px. Desktop cover; mobile crops the sides off this.</li>
+      <li><a href="/facebook-post-image-size">Facebook post image size</a> — 1200 × 630 px. The 1.91:1 link and post image, same as an OG image.</li>
+      <li><a href="/linkedin-banner-size">LinkedIn banner size</a> — 1584 × 396 px. The 4:1 profile cover, with the avatar over the left.</li>
+      <li><a href="/linkedin-post-image-size">LinkedIn post image size</a> — 1200 × 627 px. Feed image at 1.91:1 — the shape LinkedIn shares with OG.</li>
+      <li><a href="/tiktok-video-size">TikTok video size</a> — 1080 × 1920 px. 9:16 full screen; captions and buttons cover the edges.</li>
+      <li><a href="/pinterest-pin-size">Pinterest pin size</a> — 1000 × 1500 px. The 2:3 standard pin — taller pins get truncated.</li>
+      <li><a href="/discord-banner-size">Discord banner size</a> — 960 × 540 px. 16:9 profile banner, shown behind the avatar.</li>
+      <li><a href="/discord-server-icon-size">Discord server icon size</a> — 512 × 512 px. Square server icon, masked to a circle in the list.</li>
+      <li><a href="/twitch-offline-banner-size">Twitch offline banner size</a> — 1920 × 1080 px. What sits in the player when the channel is not live.</li>
+      <li><a href="/twitch-profile-banner-size">Twitch profile banner size</a> — 1200 × 480 px. The 5:2 strip across the top of the channel page.</li>
+      <li><a href="/zoom-virtual-background-size">Zoom virtual background size</a> — 1920 × 1080 px. 16:9 at 1080p — Zoom's own recommended background size.</li>
+      <li><a href="/spotify-playlist-cover-size">Spotify playlist cover size</a> — 640 × 640 px. Square JPEG, 640px, under Spotify's 4 MB upload cap.</li>
+    </ul>
+<!-- sizelist:end -->
+
     <h2>More image tools</h2>
     <ul>
       <li><a href="/compress-image">Image Compressor</a></li>

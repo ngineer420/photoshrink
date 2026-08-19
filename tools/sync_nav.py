@@ -95,12 +95,28 @@ def anchor(href, text, current, extra="", owns=()):
 # column 0; apply_regions() re-indents it to match the marker.
 # --------------------------------------------------------------------------
 
-def owned_urls(tool_href):
-    """Tier-2 URLs that belong to this tier-1 tool."""
+def families():
+    """Every tier-2 family this site declares, oldest spelling included.
+
+    `VARIANTS` may be one family dict — the original shape, still what most
+    sites in the portfolio carry — or a list of them. A family names the marker
+    pair it renders into with `region`, defaulting to the original "sizechips"
+    so a single-family site needs no edit at all.
+    """
     v = getattr(D, "VARIANTS", None)
-    if not v or canon(v.get("parent", "")) != canon(tool_href):
-        return ()
-    return tuple(canon(i["href"]) for i in v["items"])
+    if not v:
+        return []
+    return list(v) if isinstance(v, list) else [v]
+
+
+def owned_urls(tool_href):
+    """Tier-2 URLs that belong to this tier-1 tool, across every family."""
+    owned = []
+    for fam in families():
+        if canon(fam.get("parent", "")) != canon(tool_href):
+            continue
+        owned.extend(canon(i["href"]) for i in fam["items"])
+    return tuple(owned)
 
 
 def render_nav(url):
@@ -122,27 +138,47 @@ def render_nav(url):
 
     flat = count <= 8
     add('    <div class="tb-sheet%s">' % (" is-flat" if flat else ""))
+    # The columns live on this inner wrapper, never on .tb-sheet itself. A CSS
+    # multi-column box with a capped block-size does not scroll — it fragments
+    # sideways into extra columns, so on an 18-destination sheet 13 of 22 links
+    # landed outside the panel behind a silent horizontal drag, which is the
+    # exact fault this pattern exists to remove. The wrapper is unconstrained,
+    # so the columns lay out at their natural height and .tb-sheet scrolls
+    # vertically past them.
+    add('      <div class="tb-sheet-cols">')
     if flat:
         # Group headings are noise at this size; the whole set fits in one list.
-        add("      <ul>")
+        add("        <ul>")
         for t in tier1:
-            add("        <li>%s</li>" % anchor(t["href"], t["long"], url, owns=owned_urls(t["href"])))
-        add("      </ul>")
+            add("          <li>%s</li>" % anchor(t["href"], t["long"], url, owns=owned_urls(t["href"])))
+        add("        </ul>")
     else:
-        for i, (key, title) in enumerate(D.GROUPS, start=1):
+        for i, group in enumerate(D.GROUPS, start=1):
+            key, title = group[0], group[1]
+            # Optional third element: the category hub this group already has.
+            # Spec: "where a category hub page already exists, the group label
+            # is a link to it". Two-element groups render as plain text, so a
+            # site without hubs produces byte-identical output.
+            hub = group[2] if len(group) > 2 else None
             members = [t for t in tier1 if t["group"] == key]
             if not members:
                 continue
             gid = "tb-g%d" % i
+            # A linked label is still the heading of its list, not a member of
+            # it, so it never takes aria-current — otherwise every group label
+            # pointing at a fragment of the homepage would claim to be the
+            # current page while the visitor is on the homepage.
+            label = ('<a href="%s">%s</a>' % (esc(hub), esc(title))) if hub else esc(title)
             # <p>, not <h2>: these are SEO landing pages and chrome headings
             # would pollute the document outline. AT still announces the list.
-            add('      <p class="tb-grouplabel" id="%s">%s</p>' % (gid, esc(title)))
-            add('      <ul aria-labelledby="%s">' % gid)
+            add('        <p class="tb-grouplabel" id="%s">%s</p>' % (gid, label))
+            add('        <ul aria-labelledby="%s">' % gid)
             for t in members:
-                add("        <li>%s</li>" % anchor(t["href"], t["long"], url, owns=owned_urls(t["href"])))
-            add("      </ul>")
+                add("          <li>%s</li>" % anchor(t["href"], t["long"], url, owns=owned_urls(t["href"])))
+            add("        </ul>")
     for href, text in D.HUBS:
-        add('      <p class="tb-hub">%s</p>' % anchor(href, text + " →", url))
+        add('        <p class="tb-hub">%s</p>' % anchor(href, text + " →", url))
+    add("      </div>")
     add("    </div>")
     add("  </details>")
     # Sibling of the <details>, not a child: the scrim is shown by CSS alone
@@ -158,17 +194,35 @@ def render_nav(url):
     return "\n".join(out)
 
 
-def render_sizechips(url):
+def chip_data(item):
+    """The data-* attributes one chip carries.
+
+    Two spellings, because two families measure different things and neither
+    should have to know about the other. `bytes` is the original: one budget,
+    written as `data-target`, empty for "no cap". `data` is the general form —
+    a mapping of suffix to value, so a pixel family writes `data-width` and
+    `data-height` through the same renderer. A value of None or "" still emits
+    the attribute with an empty value, which is what a "clear it" chip needs.
+    """
+    if "bytes" in item:
+        return {"target": "" if item["bytes"] is None else item["bytes"]}
+    return item.get("data") or {}
+
+
+def render_chips(fam, url):
     """Tier-2 sibling chips: real links, inside the tool's own control panel."""
-    v = getattr(D, "VARIANTS", None)
-    if not v:
-        return ""
-    label_id = "size-chips-label"
-    out = ['<nav class="size-chips" aria-label="%s">' % esc(v["aria"]),
-           '  <span class="size-chips-label" id="%s">%s</span>' % (label_id, esc(v["label"])),
+    # A homepage that mounts two tools mounts two chip rows, so the label's id
+    # has to be per family or the second row's aria-labelledby points at the
+    # first row's label. The original family keeps the original id, so its
+    # pages' markup does not move.
+    region = fam.get("region", "sizechips")
+    label_id = "size-chips-label" if region == "sizechips" else region + "-label"
+    out = ['<nav class="size-chips" aria-label="%s">' % esc(fam["aria"]),
+           '  <span class="size-chips-label" id="%s">%s</span>' % (label_id, esc(fam["label"])),
            '  <ul aria-labelledby="%s">' % label_id]
-    for item in v["items"]:
-        data = ' data-target="%s"' % ("" if item["bytes"] is None else item["bytes"])
+    for item in fam["items"]:
+        data = "".join(' data-%s="%s"' % (esc(k), esc(str(v)))
+                       for k, v in chip_data(item).items())
         out.append("    <li>%s</li>"
                    % anchor(item["href"], item["label"], url, extra=' class="chip"' + data))
     out += ["  </ul>", "</nav>"]
@@ -185,11 +239,21 @@ def render_footernav(url):
     return "\n".join(out)
 
 
-RENDERERS = {
-    "nav": render_nav,
-    "sizechips": render_sizechips,
-    "footernav": render_footernav,
-}
+def build_renderers():
+    """One renderer per managed region, families included.
+
+    A page opts into a region by carrying its marker pair, so two families on
+    one site never collide: the compressor's page carries `sizechips` and the
+    resizer's carries `dimensionchips`, and each gets only its own list.
+    """
+    out = {"nav": render_nav, "footernav": render_footernav}
+    for fam in families():
+        region = fam.get("region", "sizechips")
+        out[region] = (lambda f: lambda url: render_chips(f, url))(fam)
+    return out
+
+
+RENDERERS = build_renderers()
 
 
 # --------------------------------------------------------------------------
