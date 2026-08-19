@@ -207,4 +207,36 @@
     <priority>0.7</priority>
   </url>
 <!-- sizepages:end -->
+<!-- convertpages:start -->
+  <url>
+    <loc>https://photoshrink.net/png-to-jpg</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://photoshrink.net/jpg-to-png</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://photoshrink.net/webp-to-jpg</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://photoshrink.net/webp-to-png</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://photoshrink.net/png-to-webp</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://photoshrink.net/jpg-to-webp</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+<!-- convertpages:end -->
 </urlset>

@@ -81,10 +81,53 @@ SIZE_PRESETS = [
     {"slug": "spotify-playlist-cover-size",    "label": "Spotify playlist cover",    "chip": "Spotify cover",  "width": 640,  "height": 640,  "note": "Square JPEG, 640px, under Spotify's 4 MB upload cap."},
 ]
 
+# ---------------------------------------------------------------------------
+# Tier-2 family three: the format-pair conversion pages.
+#
+# THIS IS THE ONLY PLACE THE PAIRS LIVE. `tools/build_convert_pages.py` reads
+# them to write each page's <h1>, its seeded <body> attributes and the sitemap
+# rows, and sync_nav reads them for the chip row inside the converter's own
+# panel — so adding a pair is a line here plus an entry in
+# tools/convert_pages_copy.py, and nothing else.
+#
+#   slug      -> flat clean path, matching the query ("png to jpg")
+#   src / dst -> the *format select's own vocabulary* ("png", "jpeg", "webp"),
+#                because these values are written straight into the seeded
+#                data-convert-from / data-convert-to attributes and compared
+#                against `formatSelect.value` and `mimeForFormat()` in app.js.
+#                Spelling the target "jpg" here would silently seed a value
+#                the select does not have.
+#   *_label   -> how the format is written in prose and headings, which is not
+#                the same string: the value is "jpeg", the label is "JPG".
+#   chip      -> the chip's own text
+#
+# These six are every ordered pair of PNG, JPEG and WebP. There is no seventh
+# permutation, and the formats a seventh would need are not encodable here:
+# `canvasToBlob` cannot emit image/x-icon and this repo has no ICO encoder, so
+# /png-to-ico would be a page that lies about what the button does.
+CONVERT_PAIRS = [
+    {"slug": "png-to-jpg",  "src": "png",  "dst": "jpeg", "src_label": "PNG",  "dst_label": "JPG",  "chip": "PNG \u2192 JPG",  "note": "Shrink a screenshot or export for anywhere that will not take a PNG."},
+    {"slug": "jpg-to-png",  "src": "jpeg", "dst": "png",  "src_label": "JPG",  "dst_label": "PNG",  "chip": "JPG \u2192 PNG",  "note": "Get a lossless copy to edit, or a format that accepts transparency."},
+    {"slug": "webp-to-jpg", "src": "webp", "dst": "jpeg", "src_label": "WebP", "dst_label": "JPG",  "chip": "WebP \u2192 JPG", "note": "Open a downloaded WebP in software that has never heard of it."},
+    {"slug": "webp-to-png", "src": "webp", "dst": "png",  "src_label": "WebP", "dst_label": "PNG",  "chip": "WebP \u2192 PNG", "note": "Keep the transparency a WebP carries, in a format everything reads."},
+    {"slug": "png-to-webp", "src": "png",  "dst": "webp", "src_label": "PNG",  "dst_label": "WebP", "chip": "PNG \u2192 WebP", "note": "Cut the weight of a PNG for the web without losing the alpha channel."},
+    {"slug": "jpg-to-webp", "src": "jpeg", "dst": "webp", "src_label": "JPG",  "dst_label": "WebP", "chip": "JPG \u2192 WebP", "note": "Smaller photographs for a page, at the same visible quality."},
+]
+
+# Spelling aliases. "jpeg to png" is searched separately from "jpg to png" but
+# it is the same question with the same answer, so the alias is a real page
+# that carries rel=canonical to the jpg spelling and is deliberately kept out
+# of the sitemap and out of the chip row. A synonym duplicate that competes
+# with its own canonical is what drags a thin new family down.
+CONVERT_ALIASES = [
+    {"slug": "jpeg-to-png", "canonical": "jpg-to-png"},
+]
+
 # One hub link at the bottom of the sheet per tier-2 family.
 HUBS = [
     ("/compress-image", "All 7 target sizes"),
     ("/resize-image", "All %d platform sizes" % len(SIZE_PRESETS)),
+    ("/convert-image", "All %d format pairs" % len(CONVERT_PAIRS)),
 ]
 
 # Tier-2 families. Each is one tool with a parameter baked in, so they live in
@@ -125,6 +168,27 @@ VARIANTS = [
                 "data": {"width": p["width"], "height": p["height"]},
             }
             for p in SIZE_PRESETS
+        ],
+    },
+    # The converter's format pairs. data-from is what the page expects to be
+    # given and data-to is what it produces; the empty pair on "Any format"
+    # clears the seed, which is what re-enables the dropzone's own guess.
+    {
+        "region": "formatchips",
+        "parent": "/convert-image",
+        "label": "Format pair",
+        "aria": "Image format pairs",
+        # The spelling aliases belong to this family but are deliberately not
+        # chips: they carry rel=canonical to one of the pairs, so they light
+        # the Convert chip in the rail without competing for a slot of their own.
+        "owns": ["/" + a["slug"] for a in CONVERT_ALIASES],
+        "items": [{"href": "/convert-image", "label": "Any format", "data": {"from": "", "to": ""}}] + [
+            {
+                "href": "/" + p["slug"],
+                "label": p["chip"],
+                "data": {"from": p["src"], "to": p["dst"]},
+            }
+            for p in CONVERT_PAIRS
         ],
     },
 ]
