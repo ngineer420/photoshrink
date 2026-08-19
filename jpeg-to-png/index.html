@@ -54,21 +54,30 @@
 <!-- nav:start -->
 <nav class="toolbar" aria-label="Tools">
   <details class="tb-menu">
-    <summary class="tb-trigger" aria-label="All 8 tools">
+    <summary class="tb-trigger" aria-label="All 10 tools">
       <span class="tb-glyph" aria-hidden="true">&#9636;</span>
-      <span class="tb-label">All 8<span class="tb-label-long"> tools</span></span>
+      <span class="tb-label">All 10<span class="tb-label-long"> tools</span></span>
     </summary>
-    <div class="tb-sheet is-flat">
+    <div class="tb-sheet">
       <div class="tb-sheet-cols">
-        <ul>
+        <p class="tb-grouplabel" id="tb-g1">Resize &amp; compress</p>
+        <ul aria-labelledby="tb-g1">
           <li><a href="/resize-image">Resize Image</a></li>
           <li><a href="/compress-image">Compress Image</a></li>
           <li><a href="/crop-image">Crop Image</a></li>
-          <li><a href="/convert-image" aria-current="true">Convert Image Format</a></li>
           <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
+        </ul>
+        <p class="tb-grouplabel" id="tb-g2">Convert &amp; export</p>
+        <ul aria-labelledby="tb-g2">
+          <li><a href="/convert-image" aria-current="true">Convert Image Format</a></li>
           <li><a href="/image-to-base64">Image to Base64</a></li>
           <li><a href="/favicon-generator">Favicon Generator</a></li>
+        </ul>
+        <p class="tb-grouplabel" id="tb-g3">Inspect &amp; redact</p>
+        <ul aria-labelledby="tb-g3">
           <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
+          <li><a href="/redact-screenshot">Redact a Screenshot</a></li>
+          <li><a href="/blur-image">Blur an Image</a></li>
         </ul>
         <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
         <p class="tb-hub"><a href="/resize-image">All 20 platform sizes →</a></p>

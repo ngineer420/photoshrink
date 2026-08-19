@@ -2475,6 +2475,443 @@ if (typeof document !== "undefined") {
       });
     })();
 
+    /* ---- Redact / blur tool ---- */
+    /* Powers both /redact-screenshot and /blur-image: same engine, two pages,
+       because hiding an account number and hiding a face are the same
+       operation and completely different advice.
+
+       Very little of the crop tool ports. `clampCropBox` and
+       `scaleRectToNatural` do — about twenty-five lines of pure maths — but
+       the interaction does not: `.crop-box` is a single element with four
+       handles, one `box` and one `drag`, and pointerdown is bound to the box
+       itself, so there is no draw-a-new-one-on-empty-canvas path at all. What
+       follows is a new layer: an array of boxes, an overlay per box with
+       hit-testing and z-order, selection, deletion, and per-box mode and
+       strength. */
+    (function redactTool() {
+      const workspace = $("redact-workspace");
+      if (!workspace) return;
+
+      const stageWrap = $("redact-stage-wrap");
+      const canvas = $("redact-canvas");
+      const ctx = canvas.getContext("2d");
+      const overlay = $("redact-overlay");
+      const fname = $("redact-fname");
+      const meta = $("redact-meta");
+      const errorEl = $("redact-error");
+      const modeBtns = Array.from(document.querySelectorAll("#redact-mode-group [data-mode]"));
+      const strengthField = $("redact-strength-field");
+      const strengthInput = $("redact-strength");
+      const strengthValue = $("redact-strength-value");
+      const deleteBtn = $("redact-delete");
+      const clearBtn = $("redact-clear");
+      const formatSelect = $("redact-format");
+      const downloadBtn = $("redact-download");
+      const warningEl = $("redact-warning");
+      const sourceNote = $("redact-source-note");
+      const emptyHint = $("redact-empty-hint");
+
+      /* Chrome, Firefox and Safari 17+ have CanvasRenderingContext2D.filter.
+         Older Safari silently ignores the assignment, and a blur that silently
+         does nothing on a privacy tool is the worst possible failure — so it
+         is detected, and the fallback is a real bilinear downscale/upscale
+         rather than an untouched region. */
+      const SUPPORTS_FILTER = (function () {
+        try {
+          const probe = document.createElement("canvas").getContext("2d");
+          probe.filter = "blur(2px)";
+          return probe.filter === "blur(2px)";
+        } catch (err) {
+          return false;
+        }
+      })();
+
+      // Solid bar is the default on both pages, deliberately. Blur and
+      // pixelation are partially reversible on text, so the mode that always
+      // works is the one you get without asking.
+      const DEFAULT_MODE = "bar";
+      const MIN_BOX = 12;
+
+      let current = null;      // { img, width, height, name, size, type, bytes }
+      let boxes = [];          // display-space rects + per-box mode and strength
+      let selected = -1;
+      let drag = null;
+      let mode = DEFAULT_MODE;
+      let strength = 50;
+
+      const scratch = document.createElement("canvas");
+
+      function bounds() {
+        return { width: canvas.width, height: canvas.height };
+      }
+
+      function pointerPos(e) {
+        const r = canvas.getBoundingClientRect();
+        return {
+          x: (e.clientX - r.left) * (canvas.width / r.width),
+          y: (e.clientY - r.top) * (canvas.height / r.height),
+        };
+      }
+
+      /* ---- painting ---- */
+
+      /* The preview canvas shows the real result rather than an outline over
+         an untouched image, so what is on screen is what the file will hold.
+         `scale` is 1 for the preview and (natural / display) for the export,
+         and it multiplies the blur radius and the pixel block as well as the
+         geometry — a 6 px blur on a 900 px preview of a 3000 px screenshot has
+         to become 20 px on export or the download is softer than what was
+         approved on screen. */
+      function paintRegion(target, img, box, scale, imgW, imgH) {
+        const c = target.getContext("2d");
+        const x = box.x * scale, y = box.y * scale;
+        const w = Math.max(1, box.w * scale), h = Math.max(1, box.h * scale);
+        /* Destination coordinates and SOURCE coordinates are not the same
+           space. The preview canvas is a downscaled copy, but drawImage's
+           source rectangle indexes the full-size image element, so a region at
+           (200,150) on a 900px preview of a 1600px screenshot has to be read
+           from (356,267) of the source. Getting this wrong pixelates the wrong
+           part of the picture while looking entirely plausible. */
+        const kx = (img.naturalWidth || imgW) / imgW;
+        const ky = (img.naturalHeight || imgH) / imgH;
+        const sx = x * kx, sy = y * ky, sw = Math.max(1, w * kx), sh = Math.max(1, h * ky);
+
+        if (box.mode === "bar") {
+          c.save();
+          c.fillStyle = "#000000";
+          c.fillRect(x, y, w, h);
+          c.restore();
+          return;
+        }
+
+        if (box.mode === "pixelate") {
+          // Block size scales with the box's smaller edge so a slider set once
+          // behaves the same on a stamp-sized region and a full-width banner.
+          const block = Math.max(2, Math.round((box.strength / 100) * Math.min(w, h) * 0.35) + 2);
+          const cols = Math.max(1, Math.round(w / block));
+          const rows = Math.max(1, Math.round(h / block));
+          scratch.width = cols;
+          scratch.height = rows;
+          const sc = scratch.getContext("2d");
+          sc.imageSmoothingEnabled = false;
+          sc.clearRect(0, 0, cols, rows);
+          sc.drawImage(img, sx, sy, sw, sh, 0, 0, cols, rows);
+          c.save();
+          c.imageSmoothingEnabled = false;
+          c.drawImage(scratch, 0, 0, cols, rows, x, y, w, h);
+          c.restore();
+          return;
+        }
+
+        // blur
+        const radius = Math.max(1, Math.round((box.strength / 100) * Math.min(w, h) * 0.22) + 1);
+        c.save();
+        c.beginPath();
+        c.rect(x, y, w, h);
+        c.clip();
+        if (SUPPORTS_FILTER) {
+          // The whole image is redrawn through the filter and clipped to the
+          // box, so the blur pulls in neighbouring pixels instead of smearing
+          // the box's own edge inward.
+          c.filter = "blur(" + radius + "px)";
+          c.drawImage(img, 0, 0, imgW, imgH);
+          c.filter = "none";
+        } else {
+          const cols = Math.max(1, Math.round(w / radius));
+          const rows = Math.max(1, Math.round(h / radius));
+          scratch.width = cols;
+          scratch.height = rows;
+          const sc = scratch.getContext("2d");
+          sc.imageSmoothingEnabled = true;
+          sc.clearRect(0, 0, cols, rows);
+          sc.drawImage(img, sx, sy, sw, sh, 0, 0, cols, rows);
+          c.imageSmoothingEnabled = true;
+          c.drawImage(scratch, 0, 0, cols, rows, x, y, w, h);
+        }
+        c.restore();
+      }
+
+      function repaint() {
+        if (!current) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(current.img, 0, 0, canvas.width, canvas.height);
+        boxes.forEach((b) => paintRegion(canvas, current.img, b, 1, canvas.width, canvas.height));
+        paintOverlay();
+        updateControls();
+      }
+
+      function paintOverlay() {
+        overlay.innerHTML = "";
+        const rect = canvas.getBoundingClientRect();
+        const sx = rect.width / canvas.width;
+        const sy = rect.height / canvas.height;
+        boxes.forEach((b, i) => {
+          const el = document.createElement("div");
+          el.className = "rx-box" + (i === selected ? " is-selected" : "");
+          el.style.left = b.x * sx + "px";
+          el.style.top = b.y * sy + "px";
+          el.style.width = b.w * sx + "px";
+          el.style.height = b.h * sy + "px";
+          // The selected box sits above the others so its handles stay
+          // grabbable when regions overlap.
+          el.style.zIndex = String(i === selected ? 1000 : i + 1);
+          el.dataset.index = String(i);
+          el.setAttribute("role", "button");
+          el.setAttribute("tabindex", "0");
+          el.setAttribute("aria-label", "Redaction " + (i + 1) + ", " + b.mode);
+          if (i === selected) {
+            ["nw", "ne", "sw", "se"].forEach((corner) => {
+              const handle = document.createElement("span");
+              handle.className = "rx-handle " + corner;
+              handle.dataset.corner = corner;
+              el.appendChild(handle);
+            });
+          }
+          overlay.appendChild(el);
+        });
+      }
+
+      function updateControls() {
+        const b = boxes[selected];
+        const active = b ? b.mode : mode;
+        modeBtns.forEach((btn) => btn.setAttribute("aria-pressed", String(btn.dataset.mode === active)));
+        strengthField.hidden = active === "bar";
+        strengthInput.value = String(b ? b.strength : strength);
+        strengthValue.textContent = strengthInput.value + "%";
+        deleteBtn.disabled = selected < 0;
+        clearBtn.disabled = boxes.length === 0;
+        downloadBtn.disabled = !current;
+        if (emptyHint) emptyHint.hidden = boxes.length > 0;
+
+        // The honest line, shown exactly when it applies.
+        const soft = boxes.some((x) => x.mode !== "bar");
+        warningEl.hidden = !soft;
+
+        setMeta(meta, [
+          ["Regions", String(boxes.length)],
+          ["Image", current ? current.width + "×" + current.height + "px" : "—"],
+        ]);
+      }
+
+      /* ---- interaction ---- */
+
+      function selectBox(i) {
+        selected = i;
+        paintOverlay();
+        updateControls();
+      }
+
+      overlay.addEventListener("pointerdown", (e) => {
+        const handle = e.target.closest(".rx-handle");
+        const boxEl = e.target.closest(".rx-box");
+        if (!boxEl) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const i = Number(boxEl.dataset.index);
+        selectBox(i);
+        overlay.setPointerCapture(e.pointerId);
+        drag = {
+          mode: handle ? "resize" : "move",
+          corner: handle ? handle.dataset.corner : null,
+          start: pointerPos(e),
+          startBox: Object.assign({}, boxes[i]),
+        };
+      });
+
+      // A press on bare canvas draws a new region. This is the path the crop
+      // tool has no equivalent of, and it is the whole interaction here.
+      stageWrap.addEventListener("pointerdown", (e) => {
+        if (!current || e.target.closest(".rx-box")) return;
+        e.preventDefault();
+        overlay.setPointerCapture(e.pointerId);
+        const p = pointerPos(e);
+        boxes.push({ x: p.x, y: p.y, w: MIN_BOX, h: MIN_BOX, mode: mode, strength: strength });
+        selected = boxes.length - 1;
+        drag = { mode: "draw", start: p, startBox: { x: p.x, y: p.y, w: MIN_BOX, h: MIN_BOX } };
+        repaint();
+      });
+
+      overlay.addEventListener("pointermove", (e) => {
+        if (!drag || selected < 0) return;
+        const p = pointerPos(e);
+        const dx = p.x - drag.start.x;
+        const dy = p.y - drag.start.y;
+        const s = drag.startBox;
+        let next;
+        if (drag.mode === "move") {
+          next = { x: s.x + dx, y: s.y + dy, w: s.w, h: s.h };
+        } else if (drag.mode === "draw") {
+          next = {
+            x: Math.min(drag.start.x, p.x),
+            y: Math.min(drag.start.y, p.y),
+            w: Math.abs(dx),
+            h: Math.abs(dy),
+          };
+        } else {
+          const right = drag.corner.indexOf("e") !== -1;
+          const bottom = drag.corner.indexOf("s") !== -1;
+          const x1 = right ? s.x : s.x + dx;
+          const y1 = bottom ? s.y : s.y + dy;
+          const x2 = right ? s.x + s.w + dx : s.x + s.w;
+          const y2 = bottom ? s.y + s.h + dy : s.y + s.h;
+          next = { x: Math.min(x1, x2), y: Math.min(y1, y2), w: Math.abs(x2 - x1), h: Math.abs(y2 - y1) };
+        }
+        const clamped = clampCropBox(next, bounds(), MIN_BOX);
+        boxes[selected] = Object.assign({}, boxes[selected], clamped);
+        repaint();
+      });
+
+      ["pointerup", "pointercancel"].forEach((evt) =>
+        overlay.addEventListener(evt, () => { drag = null; })
+      );
+
+      overlay.addEventListener("keydown", (e) => {
+        const boxEl = e.target.closest(".rx-box");
+        if (!boxEl) return;
+        const i = Number(boxEl.dataset.index);
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectBox(i); return; }
+        if (e.key === "Delete" || e.key === "Backspace") {
+          e.preventDefault();
+          boxes.splice(i, 1);
+          selected = -1;
+          repaint();
+        }
+      });
+
+      modeBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          mode = btn.dataset.mode;
+          if (boxes[selected]) boxes[selected].mode = mode;
+          repaint();
+        });
+      });
+
+      strengthInput.addEventListener("input", () => {
+        strength = Number(strengthInput.value) || 50;
+        if (boxes[selected]) boxes[selected].strength = strength;
+        repaint();
+      });
+
+      deleteBtn.addEventListener("click", () => {
+        if (selected < 0) return;
+        boxes.splice(selected, 1);
+        selected = -1;
+        repaint();
+      });
+
+      clearBtn.addEventListener("click", () => {
+        boxes = [];
+        selected = -1;
+        repaint();
+      });
+
+      window.addEventListener("resize", debounce(() => { if (current) paintOverlay(); }, 120));
+
+      /* ---- loading ---- */
+
+      async function load(file) {
+        hideError(errorEl);
+        const loaded = await loadImageFromFile(file);
+        let bytes = null;
+        try {
+          bytes = new Uint8Array(await file.arrayBuffer());
+        } catch (err) {
+          bytes = null;
+        }
+        current = loaded;
+        current.bytes = bytes;
+        boxes = [];
+        selected = -1;
+
+        // Fit the preview to something workable without ever upscaling: a
+        // region drawn on a stretched preview would land in the wrong place.
+        const maxW = 900;
+        const scale = Math.min(1, maxW / loaded.width);
+        canvas.width = Math.max(1, Math.round(loaded.width * scale));
+        canvas.height = Math.max(1, Math.round(loaded.height * scale));
+
+        fname.textContent = loaded.name + " · " + loaded.width + "×" + loaded.height + "px · " + formatBytes(loaded.size);
+
+        /* What the *original* carried, said out loud. The export cannot carry
+           any of it — a canvas re-encode drops every ancillary chunk and the
+           bytes go through stripMetadata() as well — and that is worth more
+           as a stated fact than as a silent one. */
+        if (sourceNote) {
+          // Counted with the same stripper the export runs, so the number
+          // shown is the number that actually comes off — not just the EXIF
+          // fields, which miss a PNG's text chunks entirely.
+          const stripped = bytes ? stripMetadata(bytes, loaded.type) : null;
+          const blocks = stripped ? stripped.removed.length : 0;
+          const tags = bytes ? parseExif(bytes) : {};
+          const hasGps = !!(tags && (tags.GPSLatitude || tags.GPSLongitude));
+          sourceNote.textContent = blocks
+            ? "The file you dropped carries " + blocks + " metadata "
+              + (blocks === 1 ? "block" : "blocks")
+              + (hasGps ? ", including GPS coordinates" : "")
+              + ". The redacted copy carries none of them."
+            : "This file carries no metadata blocks. The redacted copy carries none either.";
+        }
+
+        workspace.hidden = false;
+        workspace.closest(".tool-panel").classList.add("has-image");
+        repaint();
+      }
+
+      wireDropzone("redact", async (file) => {
+        try {
+          await load(file);
+        } catch (err) {
+          showError(errorEl, err.message);
+        }
+      });
+
+      $("redact-change").addEventListener("click", () => $("redact-file").click());
+
+      /* ---- export ---- */
+
+      /* The regions are flattened INTO the bitmap at full resolution — pixels
+         destroyed, not covered — so there is no layer to peel off, no
+         annotation to toggle and nothing underneath the bar to recover. Then
+         the encoded bytes go through stripMetadata(), so a redacted screenshot
+         also loses its metadata without anyone having to remember to ask. */
+      downloadBtn.addEventListener("click", async () => {
+        if (!current) return;
+        try {
+          hideError(errorEl);
+          const out = document.createElement("canvas");
+          out.width = current.width;
+          out.height = current.height;
+          const octx = out.getContext("2d");
+          const wantFormat = formatSelect.value === "keep"
+            ? formatFromMimeType(current.type) || "png"
+            : formatSelect.value;
+          if (wantFormat === "jpeg") {
+            octx.fillStyle = "#ffffff";
+            octx.fillRect(0, 0, out.width, out.height);
+          }
+          octx.drawImage(current.img, 0, 0, out.width, out.height);
+          const scale = current.width / canvas.width;
+          boxes.forEach((b) => paintRegion(out, current.img, b, scale, out.width, out.height));
+
+          const mime = mimeForFormat(wantFormat);
+          const blob = await canvasToBlob(out, mime, wantFormat === "png" ? undefined : 0.92);
+          if (!blob) throw new Error("This browser can't encode that format");
+
+          const raw = new Uint8Array(await blob.arrayBuffer());
+          const cleaned = stripMetadata(raw, mime);
+          const finalBytes = cleaned ? cleaned.bytes : raw;
+          downloadBlob(
+            new Blob([finalBytes], { type: mime }),
+            stripExtension(current.name) + "-redacted." + extensionForFormat(wantFormat)
+          );
+        } catch (err) {
+          showError(errorEl, err.message);
+        }
+      });
+
+      updateControls();
+    })();
+
     /* ---- Rotate & flip tool ---- */
     (function rotateTool() {
       const workspace = $("rotate-workspace");

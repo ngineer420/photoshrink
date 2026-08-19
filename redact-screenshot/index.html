@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Redact a Screenshot Online — Black Bars, No Upload | PhotoShrink</title>
+<meta name="description" content="Cover account numbers, addresses and names on a screenshot with solid black bars, blur or pixelation. The regions are flattened into the bitmap and the metadata is stripped. Nothing is uploaded.">
+<link rel="canonical" href="https://photoshrink.net/redact-screenshot">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Redact a Screenshot Online — Black Bars, No Upload">
+<meta property="og:description" content="Cover account numbers, addresses and names on a screenshot with solid black bars, blur or pixelation. The regions are flattened into the bitmap and the metadata is stripped. Nothing is uploaded.">
+<meta property="og:url" content="https://photoshrink.net/redact-screenshot">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redact a Screenshot Online — Black Bars, No Upload">
+<meta name="twitter:description" content="Cover account numbers, addresses and names on a screenshot with solid black bars, blur or pixelation. The regions are flattened into the bitmap and the metadata is stripped. Nothing is uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Screenshot Redaction Tool",
+  "url": "https://photoshrink.net/redact-screenshot",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Cover account numbers, addresses and names on a screenshot with solid black bars, blur or pixelation. The regions are flattened into the bitmap and the metadata is stripped. Nothing is uploaded."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Can the black bars be removed from the downloaded file?", "acceptedAnswer": {"@type": "Answer", "text": "No. The regions are painted into the bitmap at full resolution before the file is encoded, so the pixels under a bar are not stored anywhere in the output &mdash; there is no layer, no alpha channel holding the original, and no metadata copy. This is the difference between this and drawing a rectangle in a PDF or a word processor, where the object sits on top of text that is still selectable underneath."}},
+    {"@type": "Question", "name": "Is a blur or a pixelation really recoverable?", "acceptedAnswer": {"@type": "Answer", "text": "On text, often yes. Pixelation reduces each block to an average, and if the attacker knows the font, the size and the background &mdash; which for a bank statement or an app screenshot they do &mdash; they can render every candidate string, pixelate it the same way and match. That is the Depix class of attack. A low-radius blur is a linear filter and can be numerically inverted. On a face or a background neither attack has anything to work with, because there is no small set of candidate answers to search. This is why the tool opens on a solid bar."}},
+    {"@type": "Question", "name": "Does the screenshot get uploaded anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "No. The file is decoded, drawn to a canvas, redacted and re-encoded in this browser tab. There is no request that carries it, which is the whole reason to redact a screenshot in a web page rather than in a web service. Several other redaction tools are also client-side; the honest claim here is not that everyone else uploads, it is that this one does not, that the pixels are destroyed rather than covered, and that the metadata goes with them."}},
+    {"@type": "Question", "name": "What happens to the metadata?", "acceptedAnswer": {"@type": "Answer", "text": "It is removed. The encoded bytes go through the same stripper the EXIF viewer uses, so EXIF, GPS and every ancillary chunk come off the download. When you load a file the panel tells you what the original was carrying, so you can see what has just been dropped rather than take it on trust."}},
+    {"@type": "Question", "name": "Can I redact a batch of screenshots at once?", "acceptedAnswer": {"@type": "Answer", "text": "No, and deliberately. Every other tool on this site batches, because resizing a hundred files is the same operation a hundred times. Redaction is not: the region that matters is in a different place in every screenshot, and a batch mode would either need you to place the boxes once and apply them blindly to files where they land in the wrong place, or place them a hundred times anyway. Blind redaction is worse than no redaction, because it looks like it worked."}}
+  ]
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<!-- nav:start -->
+<nav class="toolbar" aria-label="Tools">
+  <details class="tb-menu">
+    <summary class="tb-trigger" aria-label="All 10 tools">
+      <span class="tb-glyph" aria-hidden="true">&#9636;</span>
+      <span class="tb-label">All 10<span class="tb-label-long"> tools</span></span>
+    </summary>
+    <div class="tb-sheet">
+      <div class="tb-sheet-cols">
+        <p class="tb-grouplabel" id="tb-g1">Resize &amp; compress</p>
+        <ul aria-labelledby="tb-g1">
+          <li><a href="/resize-image">Resize Image</a></li>
+          <li><a href="/compress-image">Compress Image</a></li>
+          <li><a href="/crop-image">Crop Image</a></li>
+          <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
+        </ul>
+        <p class="tb-grouplabel" id="tb-g2">Convert &amp; export</p>
+        <ul aria-labelledby="tb-g2">
+          <li><a href="/convert-image">Convert Image Format</a></li>
+          <li><a href="/image-to-base64">Image to Base64</a></li>
+          <li><a href="/favicon-generator">Favicon Generator</a></li>
+        </ul>
+        <p class="tb-grouplabel" id="tb-g3">Inspect &amp; redact</p>
+        <ul aria-labelledby="tb-g3">
+          <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
+          <li><a href="/redact-screenshot" aria-current="page">Redact a Screenshot</a></li>
+          <li><a href="/blur-image">Blur an Image</a></li>
+        </ul>
+        <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
+        <p class="tb-hub"><a href="/resize-image">All 20 platform sizes →</a></p>
+        <p class="tb-hub"><a href="/convert-image">All 6 format pairs →</a></p>
+      </div>
+    </div>
+  </details>
+  <div class="tb-scrim"></div>
+  <ul class="tb-rail">
+    <li><a href="/resize-image">Resize</a></li>
+    <li><a href="/compress-image">Compress</a></li>
+    <li><a href="/crop-image">Crop</a></li>
+    <li><a href="/convert-image">Convert</a></li>
+    <li><a href="/rotate-image">Rotate</a></li>
+    <li><a href="/image-to-base64">Base64</a></li>
+    <li><a href="/favicon-generator">Favicon</a></li>
+    <li><a href="/exif-viewer">Metadata</a></li>
+  </ul>
+</nav>
+<!-- nav:end -->
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side &middot; nothing uploaded</span>
+    <h1>Redact a screenshot</h1>
+    <p class="sub">Draw a bar over anything that should not leave the room. The regions are flattened into the bitmap rather than drawn on top of it, so there is nothing underneath to recover &mdash; and the metadata comes off on the way out.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <section id="panel-redact" class="tool-panel tab-panel active" data-prefix="redact">
+    <div class="dropzone" id="redact-drop">
+      <input type="file" id="redact-file" accept="image/*" aria-label="Choose an image">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop a screenshot to redact</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — the file stays in this tab</p>
+    </div>
+    <div class="workspace" id="redact-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="redact-fname"></span><button class="ghost change-file-btn" type="button" id="redact-change">Change image</button></div>
+        <h2>Drag on the image to cover a region &middot; drag a corner to resize</h2>
+        <div class="preview-stage">
+          <div class="rx-stage-wrap" id="redact-stage-wrap">
+            <canvas id="redact-canvas"></canvas>
+            <div class="rx-overlay" id="redact-overlay"></div>
+          </div>
+        </div>
+        <p class="rx-empty-hint" id="redact-empty-hint">Nothing is covered yet. Drag a rectangle over anything that should not leave this room.</p>
+        <div class="meta-row" id="redact-meta"></div>
+        <p class="rx-source-note" id="redact-source-note"></p>
+      </div>
+      <div class="panel">
+        <h2>Region settings</h2>
+        <div class="field">
+          <label>Cover with</label>
+          <div class="segmented" id="redact-mode-group">
+            <button type="button" data-mode="bar" aria-pressed="true">Solid bar</button>
+            <button type="button" data-mode="blur">Blur</button>
+            <button type="button" data-mode="pixelate">Pixelate</button>
+          </div>
+        </div>
+        <div class="field" id="redact-strength-field" hidden>
+          <div class="range-label"><span>Strength</span><span id="redact-strength-value">50%</span></div>
+          <input type="range" id="redact-strength" min="1" max="100" value="50">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="ghost" id="redact-delete" disabled>Delete region</button>
+          <button type="button" class="ghost" id="redact-clear" disabled>Clear all</button>
+        </div>
+        <div class="field">
+          <label for="redact-format">Output format</label>
+          <select id="redact-format">
+            <option value="keep">Keep original</option>
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="redact-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download the redacted image
+          </button>
+        </div>
+        <p class="rx-warning" id="redact-warning" hidden><strong>Blur and pixelation are only partly reversible-proof.</strong> Pixelated text can be reconstructed by matching each block against a rendering of every candidate string — the Depix class of attack — and a low-radius blur can be numerically inverted, because blurring is a filter and filters can be run backwards. Over a face or a background they are fine. Over an account number, an address or a name, use the solid bar: it replaces the pixels with nothing.</p>
+        <div class="error-banner" id="redact-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">Why a black bar beats a blur on a screenshot</h2>
+    <p>A screenshot is almost always text, and text is the worst possible thing to blur. There are only so many ways a bank can render an account number: one font, one size, one background, ten digits. That makes a pixelated or blurred number a puzzle with a very small answer space, and an attacker does not need to un-blur anything — they render every candidate string, apply the same blur or the same block grid, and look for the one that matches. The <strong>Depix</strong> class of attack does exactly that against pixelated text and recovers it convincingly. Low-radius Gaussian blur is worse still: blurring is a linear filter, and a linear filter can be run backwards.</p>
+    <p>None of that applies to a solid bar. There is no residual signal to attack because there is no residual signal at all — the pixels underneath are gone, replaced with black. That is why this tool opens on <strong>Solid bar</strong> rather than on the prettier option, and why blur and pixelate are here with a warning attached rather than as the default.</p>
+    <p>Blur and pixelate still have their place, and it is not on text. Softening a face in the background of an office screenshot, or the contents of a window you did not mean to include, is exactly what they are for &mdash; the shapes stay legible as shapes and the detail goes. If the region contains characters, use the bar.</p>
+
+    <h2>What &ldquo;redacted&rdquo; has to mean</h2>
+    <p>The canonical redaction failure is a black rectangle drawn <em>over</em> text in a PDF or a word processor: the rectangle is an object on a layer and the text is still underneath it, so selecting the page and copying gives you everything the rectangle was hiding. It has leaked court filings, contracts and diplomatic cables, and it keeps happening because the result looks completely convincing on screen.</p>
+    <p>This tool cannot fail that way, because there is no layer. When you press download, the image is redrawn at full resolution and each region is painted straight into the bitmap before the file is encoded. The output is a flat image whose pixels never held the original values. Nothing to peel off, nothing to toggle, nothing underneath.</p>
+    <p>The export also goes through the same metadata stripper the <a href="/exif-viewer">EXIF viewer</a> uses, so a redacted screenshot loses its metadata as well without anyone having to remember. That matters more than it sounds: a screenshot taken on a phone can carry a location, and a redaction that hides the address in the picture while shipping the coordinates in the header has not redacted anything.</p>
+
+    <h2>What to cover on a screenshot</h2>
+    <p>The obvious ones are account numbers, card numbers, addresses, phone numbers and full names. The ones people miss are all around the edges of the frame:</p>
+    <ul>
+      <li><strong>The URL bar.</strong> Order references, session identifiers, API keys and account numbers all live in query strings, and a screenshot of a logged-in page usually has one.</li>
+      <li><strong>Tabs and bookmarks.</strong> A row of open tabs is a remarkably specific fingerprint of who you are and what you were doing, and a bookmarks bar is a list of the systems you have access to.</li>
+      <li><strong>Notifications.</strong> A message preview or a calendar toast that slid in while you were pressing the shortcut.</li>
+      <li><strong>Avatars and profile photos.</strong> A face is identifying whether or not the name beside it is covered.</li>
+      <li><strong>Autofill and suggestion dropdowns</strong>, which cheerfully display three other people's email addresses under the field you were demonstrating.</li>
+    </ul>
+    <p>Draw as many regions as you need &mdash; each one keeps its own mode and strength, so a face can be blurred on the same image where a reference number gets a bar.</p>
+
+    <h2>How to redact a screenshot</h2>
+    <ol>
+      <li>Drop the screenshot on the panel above, or paste it straight out of the clipboard.</li>
+      <li>Drag a rectangle over anything that should not leave the room. Drag inside it to move it, drag a corner to resize it, and press Delete to remove it.</li>
+      <li>Leave it on <strong>Solid bar</strong> for anything with characters in it. Switch a region to blur or pixelate only where the content is a face or a background.</li>
+      <li>Download. The regions are flattened into the bitmap and the metadata is stripped on the way out.</li>
+      <li>Check the result before you send it. The preview is the file &mdash; what you see is what gets encoded.</li>
+    </ol>
+
+    <h2>Questions</h2>
+    <div class="faq-item">
+      <h3>Can the black bars be removed from the downloaded file?</h3>
+      <p>No. The regions are painted into the bitmap at full resolution before the file is encoded, so the pixels under a bar are not stored anywhere in the output &mdash; there is no layer, no alpha channel holding the original, and no metadata copy. This is the difference between this and drawing a rectangle in a PDF or a word processor, where the object sits on top of text that is still selectable underneath.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Is a blur or a pixelation really recoverable?</h3>
+      <p>On text, often yes. Pixelation reduces each block to an average, and if the attacker knows the font, the size and the background &mdash; which for a bank statement or an app screenshot they do &mdash; they can render every candidate string, pixelate it the same way and match. That is the Depix class of attack. A low-radius blur is a linear filter and can be numerically inverted. On a face or a background neither attack has anything to work with, because there is no small set of candidate answers to search. This is why the tool opens on a solid bar.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Does the screenshot get uploaded anywhere?</h3>
+      <p>No. The file is decoded, drawn to a canvas, redacted and re-encoded in this browser tab. There is no request that carries it, which is the whole reason to redact a screenshot in a web page rather than in a web service. Several other redaction tools are also client-side; the honest claim here is not that everyone else uploads, it is that this one does not, that the pixels are destroyed rather than covered, and that the metadata goes with them.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What happens to the metadata?</h3>
+      <p>It is removed. The encoded bytes go through the same stripper the EXIF viewer uses, so EXIF, GPS and every ancillary chunk come off the download. When you load a file the panel tells you what the original was carrying, so you can see what has just been dropped rather than take it on trust.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Can I redact a batch of screenshots at once?</h3>
+      <p>No, and deliberately. Every other tool on this site batches, because resizing a hundred files is the same operation a hundred times. Redaction is not: the region that matters is in a different place in every screenshot, and a batch mode would either need you to place the boxes once and apply them blindly to files where they land in the wrong place, or place them a hundred times anyway. Blind redaction is worse than no redaction, because it looks like it worked.</p>
+    </div>
+
+    <h2>Related tools</h2>
+    <ul>
+      <li><a href="/blur-image">Blur an image</a> &mdash; the same tool with the guidance aimed at faces and backgrounds rather than text.</li>
+      <li><a href="/exif-viewer">EXIF &amp; metadata viewer</a> &mdash; see what a file is carrying before you send it, and strip it.</li>
+      <li><a href="/crop-image">Crop an image</a> &mdash; sometimes cutting the edge off is a cleaner answer than covering it.</li>
+      <li><a href="/articles/why-client-side-image-tools-are-more-private.html">Why client-side tools are more private</a> &mdash; what &ldquo;never leaves your browser&rdquo; actually means.</li>
+    </ul>
+  </section>
+  </main>
+
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

@@ -810,3 +810,41 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
   .target-row { flex-wrap: wrap; }
   .target-row select { flex: 0 0 78px; }
 }
+
+/* ---------- redact / blur tool ---------- */
+/* Deliberately not a copy of the crop box: crop has one selection and a
+   darkened surround, this has many regions and no surround at all — the point
+   is to see the rest of the image while you work on a corner of it. */
+.rx-stage-wrap { position: relative; display: inline-block; max-width: 100%; touch-action: none; }
+.rx-stage-wrap canvas { display: block; max-width: 100%; border-radius: 4px; cursor: crosshair; }
+.rx-overlay { position: absolute; inset: 0; }
+.rx-box {
+  position: absolute;
+  border: 1.5px dashed rgba(255, 255, 255, .85);
+  outline: 1.5px dashed rgba(24, 19, 13, .7);
+  cursor: move;
+  touch-action: none;
+}
+.rx-box.is-selected { border: 2px solid var(--coral); outline: 1px solid var(--coral-contrast); }
+.rx-box:focus-visible { outline: 3px solid var(--coral); outline-offset: 2px; }
+.rx-handle {
+  position: absolute; width: 14px; height: 14px; background: var(--coral);
+  border: 2px solid var(--coral-contrast); border-radius: 50%; touch-action: none;
+}
+.rx-handle.nw { left: -8px; top: -8px; cursor: nwse-resize; }
+.rx-handle.ne { right: -8px; top: -8px; cursor: nesw-resize; }
+.rx-handle.sw { left: -8px; bottom: -8px; cursor: nesw-resize; }
+.rx-handle.se { right: -8px; bottom: -8px; cursor: nwse-resize; }
+
+.rx-empty-hint {
+  margin: 10px 0 0; font-size: 13px; color: var(--ink-soft, inherit); opacity: .8;
+}
+.rx-warning {
+  margin: 14px 0 0; padding: 12px 14px;
+  border: 1px solid var(--border-soft); border-left: 3px solid var(--coral);
+  border-radius: var(--radius-sm);
+  background: var(--paper-inset);
+  font-size: 13.5px; line-height: 1.5;
+}
+.rx-warning[hidden] { display: none; }
+.rx-source-note { margin: 10px 0 0; font-size: 12.5px; opacity: .85; }

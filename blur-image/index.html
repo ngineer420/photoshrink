@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<title>Blur an Image Online — Faces and Backgrounds, No Upload | PhotoShrink</title>
+<meta name="description" content="Blur a face, a licence plate or a background in your browser. Pixelate or cover with a solid bar instead, per region. The result is flattened into the bitmap and nothing is uploaded.">
+<link rel="canonical" href="https://photoshrink.net/blur-image">
+<meta name="theme-color" content="#fbf6ee">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Blur an Image Online — Faces and Backgrounds, No Upload">
+<meta property="og:description" content="Blur a face, a licence plate or a background in your browser. Pixelate or cover with a solid bar instead, per region. The result is flattened into the bitmap and nothing is uploaded.">
+<meta property="og:url" content="https://photoshrink.net/blur-image">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Blur an Image Online — Faces and Backgrounds, No Upload">
+<meta name="twitter:description" content="Blur a face, a licence plate or a background in your browser. Pixelate or cover with a solid bar instead, per region. The result is flattened into the bitmap and nothing is uploaded.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Image Blur Tool",
+  "url": "https://photoshrink.net/blur-image",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Blur a face, a licence plate or a background in your browser. Pixelate or cover with a solid bar instead, per region. The result is flattened into the bitmap and nothing is uploaded."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Why does the tool start on a solid bar when this is the blur page?", "acceptedAnswer": {"@type": "Answer", "text": "Because that is the setting that is never wrong. Blur suits faces and backgrounds and fails on text, and the cost of getting that backwards is not a worse-looking image but a recoverable one. Starting on the bar means the failure mode is a picture that is more covered than it needed to be, rather than one that looks covered and is not. Blur is one click away in the mode row."}},
+    {"@type": "Question", "name": "How strong does the blur need to be?", "acceptedAnswer": {"@type": "Answer", "text": "Strong enough that the structure is gone. For a face, that means no visible eye line, no mouth and no sense of which way the head is turned &mdash; a smooth oval rather than a soft face. The strength here is measured against the region's own shorter edge rather than in fixed pixels, so the same slider position does the same job on a small face and a large one, and on a preview and on the full-resolution download."}},
+    {"@type": "Question", "name": "Can a blur be undone?", "acceptedAnswer": {"@type": "Answer", "text": "A weak one, on the right content, sometimes. Blurring is a linear filter, so inverting it is a well-studied problem, and it works best exactly where the answer space is small &mdash; a number plate, a date, a short string in a known font. Against a face there is no small set of candidates to search, which is why a genuinely strong blur over a face is a reasonable thing to do and a weak blur over a licence plate is not. For strings, use the solid bar."}},
+    {"@type": "Question", "name": "Does the blurred region stay blurred in the file I download?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The image is redrawn at full resolution and every region is painted into the bitmap before encoding, so the download is a flat image whose pixels never held the original values. There is no layer to remove and no hidden copy. The blur radius is scaled with the image, so the file matches what the preview showed rather than being softer or harder."}},
+    {"@type": "Question", "name": "Is my photo uploaded?", "acceptedAnswer": {"@type": "Answer", "text": "No. The file is decoded, drawn to a canvas, blurred and re-encoded here in this tab, and no request carries it anywhere. Metadata is stripped from the download as well, using the same code as the EXIF viewer &mdash; which matters, because a photo of a person usually carries the time and often the place it was taken."}}
+  ]
+}
+</script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="photoshrink.net home">
+      <span class="brand-mark">photo<span class="squeeze-o">shrink</span></span>
+      <span class="brand-tag">image tools that never leave your browser</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<!-- nav:start -->
+<nav class="toolbar" aria-label="Tools">
+  <details class="tb-menu">
+    <summary class="tb-trigger" aria-label="All 10 tools">
+      <span class="tb-glyph" aria-hidden="true">&#9636;</span>
+      <span class="tb-label">All 10<span class="tb-label-long"> tools</span></span>
+    </summary>
+    <div class="tb-sheet">
+      <div class="tb-sheet-cols">
+        <p class="tb-grouplabel" id="tb-g1">Resize &amp; compress</p>
+        <ul aria-labelledby="tb-g1">
+          <li><a href="/resize-image">Resize Image</a></li>
+          <li><a href="/compress-image">Compress Image</a></li>
+          <li><a href="/crop-image">Crop Image</a></li>
+          <li><a href="/rotate-image">Rotate &amp; Flip Image</a></li>
+        </ul>
+        <p class="tb-grouplabel" id="tb-g2">Convert &amp; export</p>
+        <ul aria-labelledby="tb-g2">
+          <li><a href="/convert-image">Convert Image Format</a></li>
+          <li><a href="/image-to-base64">Image to Base64</a></li>
+          <li><a href="/favicon-generator">Favicon Generator</a></li>
+        </ul>
+        <p class="tb-grouplabel" id="tb-g3">Inspect &amp; redact</p>
+        <ul aria-labelledby="tb-g3">
+          <li><a href="/exif-viewer">EXIF &amp; Metadata Viewer</a></li>
+          <li><a href="/redact-screenshot">Redact a Screenshot</a></li>
+          <li><a href="/blur-image" aria-current="page">Blur an Image</a></li>
+        </ul>
+        <p class="tb-hub"><a href="/compress-image">All 7 target sizes →</a></p>
+        <p class="tb-hub"><a href="/resize-image">All 20 platform sizes →</a></p>
+        <p class="tb-hub"><a href="/convert-image">All 6 format pairs →</a></p>
+      </div>
+    </div>
+  </details>
+  <div class="tb-scrim"></div>
+  <ul class="tb-rail">
+    <li><a href="/resize-image">Resize</a></li>
+    <li><a href="/compress-image">Compress</a></li>
+    <li><a href="/crop-image">Crop</a></li>
+    <li><a href="/convert-image">Convert</a></li>
+    <li><a href="/rotate-image">Rotate</a></li>
+    <li><a href="/image-to-base64">Base64</a></li>
+    <li><a href="/favicon-generator">Favicon</a></li>
+    <li><a href="/exif-viewer">Metadata</a></li>
+  </ul>
+</nav>
+<!-- nav:end -->
+
+<main id="main">
+  <div class="hero">
+    <span class="eyebrow">100% client-side &middot; nothing uploaded</span>
+    <h1>Blur part of an image</h1>
+    <p class="sub">Blur a face, a background or anything else you did not mean to publish. Draw as many regions as you like, each with its own mode and strength &mdash; and the result is flattened into the pixels rather than drawn on top of them.</p>
+    <div class="trust-banner">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your images never leave your browser
+    </div>
+  </div>
+
+  <section id="panel-redact" class="tool-panel tab-panel active" data-prefix="redact">
+    <div class="dropzone" id="redact-drop">
+      <input type="file" id="redact-file" accept="image/*" aria-label="Choose an image">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <p class="dz-title">Drop an image to blur</p>
+      <p class="dz-sub">or click to browse, or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd> — the file stays in this tab</p>
+    </div>
+    <div class="workspace" id="redact-workspace" hidden>
+      <div class="panel">
+        <div class="file-name-row"><span class="fname" id="redact-fname"></span><button class="ghost change-file-btn" type="button" id="redact-change">Change image</button></div>
+        <h2>Drag on the image to cover a region &middot; drag a corner to resize</h2>
+        <div class="preview-stage">
+          <div class="rx-stage-wrap" id="redact-stage-wrap">
+            <canvas id="redact-canvas"></canvas>
+            <div class="rx-overlay" id="redact-overlay"></div>
+          </div>
+        </div>
+        <p class="rx-empty-hint" id="redact-empty-hint">Nothing is covered yet. Drag a rectangle over anything that should not leave this room.</p>
+        <div class="meta-row" id="redact-meta"></div>
+        <p class="rx-source-note" id="redact-source-note"></p>
+      </div>
+      <div class="panel">
+        <h2>Region settings</h2>
+        <div class="field">
+          <label>Cover with</label>
+          <div class="segmented" id="redact-mode-group">
+            <button type="button" data-mode="bar" aria-pressed="true">Solid bar</button>
+            <button type="button" data-mode="blur">Blur</button>
+            <button type="button" data-mode="pixelate">Pixelate</button>
+          </div>
+        </div>
+        <div class="field" id="redact-strength-field" hidden>
+          <div class="range-label"><span>Strength</span><span id="redact-strength-value">50%</span></div>
+          <input type="range" id="redact-strength" min="1" max="100" value="50">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="ghost" id="redact-delete" disabled>Delete region</button>
+          <button type="button" class="ghost" id="redact-clear" disabled>Clear all</button>
+        </div>
+        <div class="field">
+          <label for="redact-format">Output format</label>
+          <select id="redact-format">
+            <option value="keep">Keep original</option>
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="primary download-btn" id="redact-download" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+            Download the redacted image
+          </button>
+        </div>
+        <p class="rx-warning" id="redact-warning" hidden><strong>Blur and pixelation are only partly reversible-proof.</strong> Pixelated text can be reconstructed by matching each block against a rendering of every candidate string — the Depix class of attack — and a low-radius blur can be numerically inverted, because blurring is a filter and filters can be run backwards. Over a face or a background they are fine. Over an account number, an address or a name, use the solid bar: it replaces the pixels with nothing.</p>
+        <div class="error-banner" id="redact-error" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow" style="padding-top:44px;">
+    <h2 style="margin-top:0;">It opens on a solid bar. Here is why.</h2>
+    <p>This is the blur tool, and the first thing it does is not blur anything. That is deliberate. Blur is the right answer for a face, a background, a whiteboard or a licence plate &mdash; anything whose content is a shape rather than a string. It is the wrong answer for text, because text has a tiny answer space: one font, one size, one background, and a known alphabet. Blurring is a linear filter, and a low-radius linear filter can be run backwards. So the mode that always works is the one you get for free, and blur is one click away for the cases it actually suits.</p>
+    <p>Pick <strong>Blur</strong> from the mode row and drag a region. Each region keeps its own mode, so a single image can have a heavily blurred face and a hard bar over the name badge beside it.</p>
+
+    <h2>How much blur is enough</h2>
+    <p>The mistake is treating the strength slider as a matter of taste. The question is not whether the region looks soft, it is whether the <em>structure</em> that identifies the subject has gone, and the answer scales with the size of that structure rather than with the size of the image.</p>
+    <p>For a face, the usable test is the eye line. If you can still see where the eyes are, where the mouth is and which way the head is turned, the blur is decorative: face recognition works on exactly that geometry, and so does a human who already knows the person. Push the radius until the face is a single smooth oval with no internal features. On this tool the strength is measured against the region's own shorter edge, so a small face and a large one need roughly the same slider position rather than the same pixel count.</p>
+    <p>For a licence plate or a house number, do not blur at all &mdash; those are strings, and a bar is the honest tool. For a background, you usually want less than you think: enough that a screen or a document in the frame is unreadable, not so much that the photograph stops making sense.</p>
+
+    <h2>Blur or pixelate?</h2>
+    <p>They fail in different ways and neither gets its own page here, because they are two settings on one operation rather than two tools.</p>
+    <p><strong>Pixelate</strong> replaces each block with its average colour. It looks deliberate, which is sometimes exactly the signal you want &mdash; nobody mistakes a mosaic for a focus problem &mdash; and it preserves the overall shape and colour of what it covers. Its weakness is that the block averages are a compact, stable code for what was underneath, which is what makes pixelated text recoverable by rendering candidates and comparing.</p>
+    <p><strong>Blur</strong> keeps a smoother, more natural look and is what most people mean by hiding a face. Its weakness is that a small radius leaves most of the original signal present and merely rearranged, and that people habitually use a radius far too small because the result already looks blurry to an eye that knows what is behind it.</p>
+    <p>For faces and backgrounds, either is fine at a strength that actually removes the structure. For anything with characters, neither is fine, and the tool says so on screen the moment a region is set to one of them.</p>
+
+    <h2>How to blur part of an image</h2>
+    <ol>
+      <li>Drop the photo on the panel above, or paste it from the clipboard.</li>
+      <li>Choose <strong>Blur</strong> in the mode row.</li>
+      <li>Drag a rectangle over the face, the plate or the background. Drag inside it to move it, a corner to resize it.</li>
+      <li>Push the strength up until the internal structure is gone, not just until it looks soft.</li>
+      <li>Download. The blur is baked into the pixels and the metadata is stripped on the way out.</li>
+    </ol>
+
+    <h2>Questions</h2>
+    <div class="faq-item">
+      <h3>Why does the tool start on a solid bar when this is the blur page?</h3>
+      <p>Because that is the setting that is never wrong. Blur suits faces and backgrounds and fails on text, and the cost of getting that backwards is not a worse-looking image but a recoverable one. Starting on the bar means the failure mode is a picture that is more covered than it needed to be, rather than one that looks covered and is not. Blur is one click away in the mode row.</p>
+    </div>
+    <div class="faq-item">
+      <h3>How strong does the blur need to be?</h3>
+      <p>Strong enough that the structure is gone. For a face, that means no visible eye line, no mouth and no sense of which way the head is turned &mdash; a smooth oval rather than a soft face. The strength here is measured against the region's own shorter edge rather than in fixed pixels, so the same slider position does the same job on a small face and a large one, and on a preview and on the full-resolution download.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Can a blur be undone?</h3>
+      <p>A weak one, on the right content, sometimes. Blurring is a linear filter, so inverting it is a well-studied problem, and it works best exactly where the answer space is small &mdash; a number plate, a date, a short string in a known font. Against a face there is no small set of candidates to search, which is why a genuinely strong blur over a face is a reasonable thing to do and a weak blur over a licence plate is not. For strings, use the solid bar.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Does the blurred region stay blurred in the file I download?</h3>
+      <p>Yes. The image is redrawn at full resolution and every region is painted into the bitmap before encoding, so the download is a flat image whose pixels never held the original values. There is no layer to remove and no hidden copy. The blur radius is scaled with the image, so the file matches what the preview showed rather than being softer or harder.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Is my photo uploaded?</h3>
+      <p>No. The file is decoded, drawn to a canvas, blurred and re-encoded here in this tab, and no request carries it anywhere. Metadata is stripped from the download as well, using the same code as the EXIF viewer &mdash; which matters, because a photo of a person usually carries the time and often the place it was taken.</p>
+    </div>
+
+    <h2>Related tools</h2>
+    <ul>
+      <li><a href="/redact-screenshot">Redact a screenshot</a> &mdash; the same tool with the guidance aimed at account numbers and addresses.</li>
+      <li><a href="/exif-viewer">EXIF &amp; metadata viewer</a> &mdash; check what a photo is carrying before you post it.</li>
+      <li><a href="/crop-image">Crop an image</a> &mdash; cutting the subject out entirely is stronger than blurring it.</li>
+      <li><a href="/articles/why-client-side-image-tools-are-more-private.html">Why client-side tools are more private</a> &mdash; what &ldquo;never leaves your browser&rdquo; actually means.</li>
+    </ul>
+  </section>
+  </main>
+
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> photoshrink.net</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>
