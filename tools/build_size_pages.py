@@ -119,6 +119,7 @@ def page_html(preset, by_slug):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/manifest.webmanifest">
 <script>(function(){{try{{var t=localStorage.getItem("psk-theme");if(t)document.documentElement.setAttribute("data-theme",t);}}catch(e){{}}}})();</script>
 <title>{title}</title>
 <meta name="description" content="{description}">

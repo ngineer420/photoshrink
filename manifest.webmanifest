@@ -1,0 +1,14 @@
+{
+  "name": "PhotoShrink",
+  "short_name": "PhotoShrink",
+  "description": "Resize, compress, crop, convert and inspect images in your browser. Nothing is uploaded.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbf6ee",
+  "theme_color": "#fbf6ee",
+  "icons": [
+    { "src": "/assets/favicon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}

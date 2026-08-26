@@ -889,6 +889,18 @@ if (typeof module !== "undefined" && module.exports) {
   };
 }
 
+/* ============================= service worker ============================= */
+
+// sw.js precaches every tool page, the stylesheet and this file, so a page
+// that loaded once opens again with no network. tools/build_sw.py writes
+// sw.js and bumps its cache name on every deploy. The worker never touches
+// the AdSense script, because it handles same-origin requests only.
+if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+
 /* ============================= DOM wiring ============================= */
 
 if (typeof document !== "undefined") {
