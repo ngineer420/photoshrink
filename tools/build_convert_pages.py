@@ -93,7 +93,10 @@ def head_block(title, description, url, canonical, ld_blocks, body_attrs):
 <meta property="og:title" content="%(ogtitle)s">
 <meta property="og:description" content="%(description)s">
 <meta property="og:url" content="%(url)s">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="%(site)s/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="%(ogtitle)s">
 <meta name="twitter:description" content="%(description)s">
 
@@ -110,6 +113,7 @@ def head_block(title, description, url, canonical, ld_blocks, body_attrs):
         "description": esc(description),
         "url": url,
         "canonical": canonical,
+        "site": SITE,
         "ogtitle": esc(title.split(" | ")[0]),
         "ld": scripts,
         "attrs": body_attrs,

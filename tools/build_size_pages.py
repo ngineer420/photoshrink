@@ -130,7 +130,10 @@ def page_html(preset, by_slug):
 <meta property="og:title" content="{label} Size: {w} × {h} px">
 <meta property="og:description" content="{description}">
 <meta property="og:url" content="{url}">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="{site}/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{label} Size: {w} × {h} px">
 <meta name="twitter:description" content="{description}">
 
@@ -209,7 +212,7 @@ def page_html(preset, by_slug):
         title=esc(title), description=esc(description), url=url, label=esc(label),
         w=w, h=h, ratio=ratio, lede=copy["lede"], faq_json=faq_json, header=HEADER,
         panel=PANEL, facts=facts, heading=esc(heading), prose=prose, faqs=faqs,
-        related=related_links(slug, copy, by_slug), footer=FOOTER,
+        related=related_links(slug, copy, by_slug), footer=FOOTER, site=SITE,
     )
 
 
