@@ -3,7 +3,7 @@
    VERSION is a hash of every precached file, so the cache name changes on
    each deploy that changes the offline set. */
 
-const VERSION = "d961b193863e";
+const VERSION = "3116035921cb";
 const CACHE = "photoshrink-" + VERSION;
 const PRECACHE = [
   "/",

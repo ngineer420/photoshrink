@@ -266,6 +266,10 @@ def render_peers(url):
         out.append('    <li><a href="%s">%s</a><span class="peer-domain">%s</span></li>'
                    % (esc(href), esc(text), esc(domain)))
     out += ["  </ul>", "</nav>"]
+    address = getattr(D, "CONTACT_ADDRESS", None)
+    if address:
+        out.append('<p class="footer-contact">%s <a href="mailto:%s">%s</a></p>'
+                   % (esc(getattr(D, "CONTACT_LEAD", "Questions?")), address, address))
     return "\n".join(out)
 
 
