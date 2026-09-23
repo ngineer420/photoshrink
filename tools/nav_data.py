@@ -14,11 +14,17 @@ control panel, where it is a parameter and not a peer.
 # Noun used in the menu trigger: "All 10 tools".
 NOUN = "tools"
 
-# Tier-1 tools, in rail order. The rail is capped at 8 and this site now has 10,
-# so the last two are sheet-only: the rail is measured traffic, and a page
-# published today has no impressions to have earned a slot with. Crossing 8 also
-# switches the sheet from one flat list to named groups — the renderer's rule,
-# not a per-site choice — which is why GROUPS below stops being decorative.
+# The rail cap for this site. The default is 8, and photoshrink raises it to 10.
+# The first version of this site held the last two tools out of the rail on the
+# argument that a new page has no impressions to have earned a slot with. That
+# left /redact-screenshot and /blur-image reachable only inside a collapsed
+# sheet, and the rest of the page still said "eight tools" (photoshrink#18). The
+# rail scrolls horizontally with an edge fade, so ten chips cost no layout.
+RAIL_CAP = 10
+
+# Tier-1 tools, in rail order. Crossing 8 switches the sheet from one flat list
+# to named groups — the renderer's rule, not a per-site choice — which is why
+# GROUPS below stops being decorative.
 #   label -> rail chip text, <= 18 chars
 #   long  -> anchor text in the sheet and in any footer/in-body list
 #   group -> sheet grouping key, only used once a site passes 8 destinations
@@ -31,7 +37,6 @@ TOOLS = [
     {"href": "/image-to-base64",   "label": "Base64",   "long": "Image to Base64",        "group": "convert", "tier": 1},
     {"href": "/favicon-generator", "label": "Favicon",  "long": "Favicon Generator",      "group": "convert", "tier": 1},
     {"href": "/exif-viewer",       "label": "Metadata", "long": "EXIF & Metadata Viewer", "group": "inspect", "tier": 1},
-    # --- past the rail cap: sheet only ---
     {"href": "/redact-screenshot", "label": "Redact",   "long": "Redact a Screenshot",    "group": "inspect", "tier": 1},
     {"href": "/blur-image",        "label": "Blur",     "long": "Blur an Image",          "group": "inspect", "tier": 1},
 ]
