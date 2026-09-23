@@ -680,6 +680,15 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
 .peer-sites a:hover { color: var(--coral-deep); }
 .peer-domain { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
 
+/* The contact line sits under the related-tools block, still inside the footer
+   and above the legal row. */
+.footer-contact {
+  max-width: var(--maxw); margin: 0 auto; padding: 14px 20px 0;
+  font-size: 12.5px; color: var(--ink-faint);
+}
+.footer-contact a { color: var(--ink-dim); font-weight: 600; }
+.footer-contact a:hover { color: var(--coral-deep); }
+
 /* cursor: default overrides the link hand — the mark is meant to be missable,
    and a pointing finger on hover advertises it. */
 .erabbit-mark { display: block; width: 10px; margin: 0 0 0 auto; line-height: 0; cursor: default; }

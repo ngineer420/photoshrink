@@ -45,7 +45,57 @@ def file_for(url):
     return None
 
 
+def _dirty_paths():
+    """Every path git reports as changed or untracked, as absolute strings.
+
+    One call for the whole repo, not one per file. A file in this set has not
+    been committed in its current state, so its last commit date describes
+    bytes that are no longer on disk.
+    """
+    out = set()
+    try:
+        result = subprocess.run(["git", "status", "--porcelain", "-z"],
+                                cwd=ROOT, capture_output=True, text=True, timeout=20)
+        if result.returncode != 0:
+            return out
+        fields = result.stdout.split("\0")
+        i = 0
+        while i < len(fields):
+            entry = fields[i]
+            i += 1
+            if len(entry) < 4:
+                continue
+            status, name = entry[:2], entry[3:]
+            # A rename entry is "R  old" followed by the new path in the next
+            # field. The new path is the one on disk.
+            if "R" in status and i < len(fields):
+                name = fields[i]
+                i += 1
+            out.add(str((ROOT / name).resolve()))
+    except Exception:
+        pass
+    return out
+
+
+DIRTY = _dirty_paths()
+TODAY = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+
+
 def last_changed(path):
+    """The day the file last changed, as YYYY-MM-DD.
+
+    A file that is dirty or untracked changed today, whatever git history
+    says. That case is not an edge: the sitemap is written BEFORE the commit
+    that carries it, so without this the file's date would be the PREVIOUS
+    commit's, and `--check` on a clean `main` would fail the moment the commit
+    landed, with every URL moved forward and nothing actually changed.
+
+    Otherwise the date is the day of the last commit that touched the file.
+    The mtime is the last resort, and only where git cannot answer at all: a
+    `git pull` resets mtimes, so an mtime-based date is stale by design.
+    """
+    if str(Path(path).resolve()) in DIRTY:
+        return TODAY
     try:
         out = subprocess.run(
             ["git", "log", "-1", "--format=%ad", "--date=short", "--", str(path)],

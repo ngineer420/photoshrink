@@ -220,6 +220,15 @@ PEERS = [
     ("https://inascii.com/", "ASCII art and text banners", "inascii.com"),
 ]
 
+# The portfolio contact address, written with the `@` as an HTML entity in both
+# the href and the visible text. A browser decodes an entity in an attribute
+# value, so the link works for a mouse, a keyboard and a screen reader, while a
+# scraper reading the raw HTML for a plain address finds nothing. Nothing here
+# depends on JavaScript: a contact link that needs a script to work is worse
+# than an address in plain sight.
+CONTACT_ADDRESS = "hello&#64;goodbotbad.bot"
+CONTACT_LEAD = "Questions, or a tool doing the wrong thing?"
+
 # Long anchor text for a footer crawl list, if the site has one. photoshrink
 # deliberately does not: the rail is always visible and carries every tier-1
 # destination, and the always-visible size chips carry every tier-2 one, so a
