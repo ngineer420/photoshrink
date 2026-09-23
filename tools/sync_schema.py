@@ -103,10 +103,15 @@ def page_url(path):
 
 
 def canonical_of(src, path):
+    """The page's declared canonical URL, or None when it declares none.
+
+    None is not a gap to fill in. `404.html` has no canonical because the
+    server sends it for every address that does not exist, so it has no address
+    of its own. Guessing one from the file name produces `/404/`, which is a
+    URL this site does not serve.
+    """
     match = re.search(r'<link rel="canonical" href="([^"]+)"', src)
-    if match:
-        return match.group(1)
-    return SITE + page_url(path)
+    return match.group(1) if match else None
 
 
 def title_of(src):
@@ -189,29 +194,34 @@ def faqpage(items):
 def region_for(path, bare):
     """The lines of the managed region for one page, or [] for none."""
     url = canonical_of(bare, path)
-    is_root = url.rstrip("/") == SITE
+    is_root = url is not None and url.rstrip("/") == SITE
     name = h1_of(bare) or title_of(bare)
     description = description_of(bare)
     lines = []
 
     missing = [t for t in OG_TAGS if ('property="%s"' % t) not in bare]
+    rel = "/" + path.relative_to(ROOT).as_posix()
     values = {
-        "og:type": "article" if "/articles/" in url else "website",
+        "og:type": "article" if "/articles/" in rel else "website",
         "og:site_name": DOMAIN,
         "og:title": title_of(bare),
         "og:description": description,
-        "og:url": url,
+        # No canonical means no address to publish. An og:url guessed from the
+        # file name would name a page the site does not serve.
+        "og:url": url or "",
     }
     for tag in missing:
         if values[tag]:
             lines.append('<meta property="%s" content="%s">'
                          % (tag, html.escape(values[tag], quote=True)))
 
-    if not is_root:
+    # A breadcrumb needs a last item, and the last item is the page's own URL.
+    # A page with no canonical has none, so it gets no trail. That is `404.html`
+    # here, and structured data on an error page is an anti-pattern anyway.
+    if url and not is_root:
         lines.append(breadcrumb(url, name))
 
-    rel = "/" + path.relative_to(ROOT).as_posix()
-    if rel in ARTICLE_DATES:
+    if url and rel in ARTICLE_DATES:
         lines.append(article(url, name, description, ARTICLE_DATES[rel]))
 
     if '"FAQPage"' not in bare:
