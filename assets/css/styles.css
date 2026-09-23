@@ -13,7 +13,7 @@
   --border-soft: #efe6d3;
   --ink: #241a12;
   --ink-dim: #6e6154;
-  --ink-faint: #a89a85;
+  --ink-faint: #756750;
   --coral: #ff5a36;
   --coral-deep: #d8401e;
   --coral-contrast: #fff7f0;
@@ -41,7 +41,7 @@
     --border-soft: #2b2116;
     --ink: #f8efe2;
     --ink-dim: #c6b6a0;
-    --ink-faint: #82735e;
+    --ink-faint: #94836a;
     --coral: #ff7c53;
     --coral-deep: #ff5a36;
     --coral-contrast: #1c0d05;
@@ -62,7 +62,7 @@
   --border-soft: #2b2116;
   --ink: #f8efe2;
   --ink-dim: #c6b6a0;
-  --ink-faint: #82735e;
+  --ink-faint: #94836a;
   --coral: #ff7c53;
   --coral-deep: #ff5a36;
   --coral-contrast: #1c0d05;
@@ -652,6 +652,33 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 60px; }
 }
 .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
 .footer-links a { color: var(--ink-dim); }
+
+/* Related tools: the sibling sites in the same portfolio. It sits above the
+   legal line, inside the footer, and is deliberately quiet — four links, each
+   saying what the site does before it says the domain. */
+.peer-sites {
+  max-width: var(--maxw); margin: 0 auto; padding: 22px 20px 0;
+}
+.peer-sites-label {
+  display: block; font-size: 11px; font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px;
+}
+/* Two columns, not four. The longest pair — "Color pickers, palettes and
+   contrast" plus its domain — needs about 290px, and four tracks across the
+   1180px measure give 271px each, so one item wrapped and the other three did
+   not. Two columns fit every pair on one line at every width above a phone. */
+.peer-sites ul {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 8px 28px;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 620px) {
+  .peer-sites ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.peer-sites li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; min-width: 0; }
+.peer-sites a { color: var(--ink-dim); font-size: 13px; font-weight: 600; }
+.peer-sites a:hover { color: var(--coral-deep); }
+.peer-domain { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
 
 /* cursor: default overrides the link hand — the mark is meant to be missable,
    and a pointing finger on hover advertises it. */

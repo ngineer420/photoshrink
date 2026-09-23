@@ -205,6 +205,21 @@ VARIANTS = [
     },
 ]
 
+# ---------------------------------------------------------------------------
+# Related tools: the sibling sites in the portfolio this one links to.
+#
+# Four, not nineteen. A footer that lists every domain the owner has reads as a
+# link farm and is worth nothing to a reader. These four are the ones a visitor
+# to an image tool plausibly wants next: colour, type, codes and ASCII.
+#
+#   href, what the site does, the domain
+PEERS = [
+    ("https://gamutlens.com/", "Color pickers, palettes and contrast", "gamutlens.com"),
+    ("https://fontloom.com/", "Fancy text and Unicode fonts", "fontloom.com"),
+    ("https://qrmint.net/", "QR codes, generate and scan", "qrmint.net"),
+    ("https://inascii.com/", "ASCII art and text banners", "inascii.com"),
+]
+
 # Long anchor text for a footer crawl list, if the site has one. photoshrink
 # deliberately does not: the rail is always visible and carries every tier-1
 # destination, and the always-visible size chips carry every tier-2 one, so a
@@ -227,4 +242,7 @@ MIGRATE = [
     # arrival — invisible to a visitor and a breakpoint-free way to hide links.
     {"op": "insert_before", "region": "sizechips", "indent": " " * 4,
      "pattern": r'    <div class="workspace" id="compress-workspace"'},
+    # The related-tools block goes inside the footer, above the legal line.
+    {"op": "insert_after", "region": "peers", "indent": "  ",
+     "pattern": r'<footer class="site-footer">'},
 ]

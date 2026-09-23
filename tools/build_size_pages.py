@@ -27,6 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import nav_data as D  # noqa: E402
+import sync_sitemap  # noqa: E402 — one function works out a page date
 from size_pages_copy import COPY  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -163,6 +164,7 @@ def page_html(preset, by_slug):
 </script>
 
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+<!-- schema:start --><!-- schema:end -->
 </head>
 <body data-resize-size="{w}x{h}">
 {header}<!-- nav:start --><!-- nav:end -->
@@ -242,7 +244,8 @@ def sitemap_rows():
     rows = []
     for p in D.SIZE_PRESETS:
         rows.append("  <url>\n    <loc>%s/%s</loc>\n    <changefreq>monthly</changefreq>\n"
-                    "    <priority>0.7</priority>\n  </url>" % (SITE, p["slug"]))
+                    "    <lastmod>%s</lastmod>\n    <priority>0.7</priority>\n  </url>"
+                    % (SITE, p["slug"], sync_sitemap.last_changed(ROOT / (p["slug"] + ".html"))))
     return "\n".join(rows)
 
 
@@ -257,7 +260,7 @@ def region_sub(text, name, body, opener, closer):
 # marker pairs and hands them straight back to whatever is already on disk, so
 # the two generators compose instead of overwriting each other's work — and so
 # --check stays quiet after a sync_nav pass.
-SYNC_REGIONS = ("nav", "dimensionchips")
+SYNC_REGIONS = ("nav", "dimensionchips", "peers", "schema")
 
 
 def keep_synced_regions(new_html, old_html):

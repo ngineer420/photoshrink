@@ -31,6 +31,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import nav_data as D  # noqa: E402
+import sync_sitemap  # noqa: E402 — one function works out a page date
 from convert_pages_copy import ALIAS_COPY, COPY  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -106,6 +107,7 @@ def head_block(title, description, url, canonical, ld_blocks, body_attrs):
 %(ld)s
 
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+<!-- schema:start --><!-- schema:end -->
 </head>
 <body %(attrs)s>
 """ % {
@@ -312,7 +314,8 @@ def sitemap_rows():
     rows = []
     for p in D.CONVERT_PAIRS:
         rows.append("  <url>\n    <loc>%s/%s</loc>\n    <changefreq>monthly</changefreq>\n"
-                    "    <priority>0.7</priority>\n  </url>" % (SITE, p["slug"]))
+                    "    <lastmod>%s</lastmod>\n    <priority>0.7</priority>\n  </url>"
+                    % (SITE, p["slug"], sync_sitemap.last_changed(ROOT / (p["slug"] + ".html"))))
     return "\n".join(rows)
 
 
@@ -326,7 +329,7 @@ def region_sub(text, name, body, opener, closer):
 # Regions inside a page that sync_nav.py owns. Emitted as bare marker pairs and
 # handed straight back to whatever is already on disk, so the two generators
 # compose and --check stays quiet after a sync_nav pass.
-SYNC_REGIONS = ("nav", "formatchips")
+SYNC_REGIONS = ("nav", "formatchips", "peers", "schema")
 
 
 def keep_synced_regions(new_html, old_html):

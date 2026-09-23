@@ -38,6 +38,11 @@
 </script>
 
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+<!-- schema:start -->
+<meta property="og:site_name" content="photoshrink.net">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://photoshrink.net/"},{"@type":"ListItem","position":2,"name":"EXIF Viewer & Metadata Stripper","item":"https://photoshrink.net/exif-viewer"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does removing EXIF reduce the image quality?","acceptedAnswer":{"@type":"Answer","text":"No. The metadata is removed at the byte level and the compressed image data is copied across unchanged, so the stripped file decodes to exactly the same pixels. This is the main reason to use a dedicated stripper rather than re-saving the photo in an editor."}},{"@type":"Question","name":"Does my photo get uploaded to check it?","acceptedAnswer":{"@type":"Answer","text":"No \u2014 the file is read with your browser's own File API and parsed in this tab. There is no server to send it to. That matters more here than on any other tool on this site: the whole point is the data you're trying not to share."}},{"@type":"Question","name":"Why does my photo have no EXIF at all?","acceptedAnswer":{"@type":"Answer","text":"Screenshots, images exported by many design tools, and anything already processed by a social network usually have no EXIF \u2014 most platforms strip it on upload. A photo straight off a camera or phone almost always has it."}},{"@type":"Question","name":"What about orientation \u2014 will my photo end up sideways?","acceptedAnswer":{"@type":"Answer","text":"The EXIF orientation tag is removed along with everything else, so a photo that relied on it to display upright may appear rotated in some viewers. If that matters, run it through the rotate tool first to bake the correct orientation into the pixels."}},{"@type":"Question","name":"Can it handle WebP, HEIC or GIF?","acceptedAnswer":{"@type":"Answer","text":"Not yet \u2014 JPEG and PNG only, because those are the two formats where the metadata can be removed losslessly with confidence. Convert other formats to JPEG with the converter first; canvas re-encoding drops the metadata anyway."}}]}</script>
+<!-- schema:end -->
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -209,6 +214,18 @@
 </main>
 
 <footer class="site-footer">
+
+  <!-- peers:start -->
+  <nav class="peer-sites" aria-label="Related tools">
+    <span class="peer-sites-label">Related tools</span>
+    <ul>
+      <li><a href="https://gamutlens.com/">Color pickers, palettes and contrast</a><span class="peer-domain">gamutlens.com</span></li>
+      <li><a href="https://fontloom.com/">Fancy text and Unicode fonts</a><span class="peer-domain">fontloom.com</span></li>
+      <li><a href="https://qrmint.net/">QR codes, generate and scan</a><span class="peer-domain">qrmint.net</span></li>
+      <li><a href="https://inascii.com/">ASCII art and text banners</a><span class="peer-domain">inascii.com</span></li>
+    </ul>
+  </nav>
+  <!-- peers:end -->
   <div class="footer-inner">
     <div>© <span id="year"></span> photoshrink.net</div>
     <div class="footer-links">
