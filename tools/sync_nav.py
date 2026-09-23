@@ -129,7 +129,9 @@ def owned_urls(tool_href):
 
 def render_nav(url):
     tier1 = [t for t in D.TOOLS if t["tier"] == 1]
-    rail = tier1[:8]
+    # The rail cap is per-site. `nav_data.RAIL_CAP` sets it; a site that omits
+    # the name keeps the original 8, so this file stays copyable verbatim.
+    rail = tier1[: getattr(D, "RAIL_CAP", 8)]
     count = len(tier1)
 
     out = []
