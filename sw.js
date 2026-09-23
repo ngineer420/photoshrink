@@ -3,7 +3,7 @@
    VERSION is a hash of every precached file, so the cache name changes on
    each deploy that changes the offline set. */
 
-const VERSION = "bcc312141583";
+const VERSION = "de69a8adbaa0";
 const CACHE = "photoshrink-" + VERSION;
 const PRECACHE = [
   "/",
@@ -51,7 +51,7 @@ const PRECACHE = [
   "/jpg-to-webp.html",
   "/jpeg-to-png.html",
   "/assets/css/styles.css",
-  "/assets/js/app.js"
+  "/assets/js/app.min.js"
 ];
 
 self.addEventListener("install", (event) => {

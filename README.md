@@ -22,7 +22,8 @@ Run each check. If one exits 1, run the matching generator and commit.
 2. `python3 tools/build_convert_pages.py --check`
 3. `python3 tools/sync_nav.py --check`
 4. `python3 tools/build_sw.py --check`
-5. `node assets/js/app.test.js`
+5. `node tools/app.test.js`
+6. `python3 tools/build_app.py --check`
 
 ## Offline
 
