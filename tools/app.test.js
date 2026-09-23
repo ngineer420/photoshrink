@@ -1,4 +1,4 @@
-// Pure-helper tests for app.js. Run with: node assets/js/app.test.js
+// Pure-helper tests for assets/js/app.js. Run with: node tools/app.test.js
 // No framework/deps — uses Node's built-in test runner + assert.
 "use strict";
 
@@ -50,7 +50,7 @@ const {
   stripJpegMetadata,
   stripPngMetadata,
   stripMetadata,
-} = require("./app.js");
+} = require("../assets/js/app.js");
 
 test("clamp", () => {
   assert.equal(clamp(5, 0, 10), 5);

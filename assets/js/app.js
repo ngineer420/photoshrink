@@ -4,7 +4,7 @@
    <canvas>, and hands the result back as a downloadable Blob.
 
    Pure, DOM-independent helpers live at the top (exported for Node via
-   `module.exports` so `assets/js/app.test.js` can exercise them without a
+   `module.exports` so `tools/app.test.js` can exercise them without a
    browser). DOM wiring lives below, inside per-tool IIFEs that no-op when
    their markup isn't present on the page — this lets the exact same script
    power both the homepage (all seven tools mounted at once) and every

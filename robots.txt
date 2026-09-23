@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# The page generators and the Node test. Not part of the site.
+Disallow: /tools/
 
 Sitemap: https://photoshrink.net/sitemap.xml
