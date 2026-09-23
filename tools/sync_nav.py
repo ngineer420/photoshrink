@@ -249,6 +249,26 @@ def render_footernav(url):
     return "\n".join(out)
 
 
+def render_peers(url):
+    """The related-tools block: sibling sites in the same portfolio.
+
+    Four links, chosen per site in nav_data.PEERS. Each one says what the site
+    does before it says the domain, because "photoshrink.net" tells a reader
+    nothing and "Resize, compress and convert images" tells them everything.
+    """
+    peers = getattr(D, "PEERS", None)
+    if not peers:
+        return ""
+    out = ['<nav class="peer-sites" aria-label="Related tools">',
+           '  <span class="peer-sites-label">Related tools</span>',
+           "  <ul>"]
+    for href, text, domain in peers:
+        out.append('    <li><a href="%s">%s</a><span class="peer-domain">%s</span></li>'
+                   % (esc(href), esc(text), esc(domain)))
+    out += ["  </ul>", "</nav>"]
+    return "\n".join(out)
+
+
 def build_renderers():
     """One renderer per managed region, families included.
 
@@ -256,7 +276,7 @@ def build_renderers():
     one site never collide: the compressor's page carries `sizechips` and the
     resizer's carries `dimensionchips`, and each gets only its own list.
     """
-    out = {"nav": render_nav, "footernav": render_footernav}
+    out = {"nav": render_nav, "footernav": render_footernav, "peers": render_peers}
     for fam in families():
         region = fam.get("region", "sizechips")
         out[region] = (lambda f: lambda url: render_chips(f, url))(fam)
