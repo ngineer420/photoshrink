@@ -223,7 +223,7 @@ PEERS = [
 # scraper reading the raw HTML for a plain address finds nothing. Nothing here
 # depends on JavaScript: a contact link that needs a script to work is worse
 # than an address in plain sight.
-CONTACT_ADDRESS = "hello&#64;goodbotbad.bot"
+CONTACT_ADDRESS = "hello@goodbotbad.bot"
 CONTACT_LEAD = "Questions, or a tool doing the wrong thing?"
 
 # Long anchor text for a footer crawl list, if the site has one. photoshrink
