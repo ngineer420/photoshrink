@@ -249,6 +249,16 @@ def render_footernav(url):
     return "\n".join(out)
 
 
+def ncr(text):
+    """Every character as a decimal numeric character reference.
+
+    The HTML parser decodes these while it parses, so the href is a real
+    `mailto:` URL with no JavaScript, and a screen reader reads the plain
+    address. Neither `@` nor `mailto:hello` appears in the bytes on disk.
+    """
+    return "".join("&#%d;" % ord(c) for c in text)
+
+
 def render_peers(url):
     """The related-tools block: sibling sites in the same portfolio.
 
@@ -268,8 +278,9 @@ def render_peers(url):
     out += ["  </ul>", "</nav>"]
     address = getattr(D, "CONTACT_ADDRESS", None)
     if address:
-        out.append('<p class="footer-contact">%s <a href="mailto:%s">%s</a></p>'
-                   % (esc(getattr(D, "CONTACT_LEAD", "Questions?")), address, address))
+        out.append('<p class="footer-contact">%s <a href="%s">%s</a></p>'
+                   % (esc(getattr(D, "CONTACT_LEAD", "Questions?")),
+                      ncr("mailto:" + address), ncr(address)))
     return "\n".join(out)
 
 
