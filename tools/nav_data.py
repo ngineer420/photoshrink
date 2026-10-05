@@ -208,16 +208,13 @@ VARIANTS = [
 # ---------------------------------------------------------------------------
 # Related tools: the sibling sites in the portfolio this one links to.
 #
-# Four, not nineteen. A footer that lists every domain the owner has reads as a
-# link farm and is worth nothing to a reader. These four are the ones a visitor
-# to an image tool plausibly wants next: colour, type, codes and ASCII.
+# One, not nineteen. A footer that lists every domain the owner has reads as a
+# link farm and is worth nothing to a reader. A visitor to an image tool
+# plausibly wants colour next, so the one peer is the colour site.
 #
 #   href, what the site does, the domain
 PEERS = [
     ("https://gamutlens.com/", "Color pickers, palettes and contrast", "gamutlens.com"),
-    ("https://fontloom.com/", "Fancy text and Unicode fonts", "fontloom.com"),
-    ("https://qrmint.net/", "QR codes, generate and scan", "qrmint.net"),
-    ("https://inascii.com/", "ASCII art and text banners", "inascii.com"),
 ]
 
 # The portfolio contact address, written with the `@` as an HTML entity in both
